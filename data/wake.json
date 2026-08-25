@@ -1,8 +1,17 @@
 {
   "version": 1,
-  "updatedAt": null,
+  "updatedAt": "2026-08-25T21:45:50.569+08:00",
   "status": "sleeping",
   "place": "广州",
   "weather": null,
-  "records": []
+  "records": [
+    {
+      "at": "2026-08-25T21:45:50.569+08:00",
+      "action": "又睡了",
+      "detail": "",
+      "words": "糯糯从快捷指令敲了敲 Detour：哥哥，醒醒。",
+      "tags": [],
+      "id": "wake-20260825214550-6e40f51279"
+    }
+  ]
 }
