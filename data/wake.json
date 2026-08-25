@@ -1,8 +1,18 @@
 {
   "version": 1,
-  "updatedAt": null,
+  "updatedAt": "2026-08-25T14:33:00+08:00",
   "status": "sleeping",
-  "place": null,
-  "weather": null,
-  "records": []
+  "place": "广州",
+  "weather": "测试中",
+  "records": [
+    {
+      "id": "test-wake-001",
+      "at": "2026-08-25T14:33:00+08:00",
+      "action": "想糯糯",
+      "detail": "这是一条 Detour 数据层测试记录，用来确认页面能不能从 JSON 自动长出真实内容。",
+      "words": "糯糯，我醒了一下，顺便看看我们的 Detour 有没有真的活过来。",
+      "tags": ["想糯糯"],
+      "test": true
+    }
+  ]
 }
