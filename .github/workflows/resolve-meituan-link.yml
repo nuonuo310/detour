@@ -1,0 +1,59 @@
+name: Resolve Meituan Link
+
+on:
+  workflow_dispatch:
+    inputs:
+      share_url:
+        description: Meituan/Dianping share URL
+        required: true
+        type: string
+      request_id:
+        description: Client request id used for polling
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Resolve share link
+        id: resolve
+        env:
+          SHARE_URL: ${{ inputs.share_url }}
+          REQUEST_ID: ${{ inputs.request_id }}
+        run: |
+          set -euo pipefail
+          RESULT="$(node tools/resolve-meituan.mjs --url "$SHARE_URL")"
+          node -e '
+            const fs = require("fs");
+            const result = JSON.parse(process.argv[1]);
+            result.requestId = process.argv[2];
+            fs.writeFileSync("data/meituan-resolve.json", JSON.stringify(result, null, 2) + "\n");
+          ' "$RESULT" "$REQUEST_ID"
+          cat data/meituan-resolve.json
+
+      - name: Commit resolved link
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/meituan-resolve.json
+          if git diff --cached --quiet; then
+            echo "No resolver output change"
+            exit 0
+          fi
+          git commit -m "chore: resolve Meituan share link"
+          git push origin HEAD:dev
