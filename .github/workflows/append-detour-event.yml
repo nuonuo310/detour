@@ -38,8 +38,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Validate current data
-        run: node tools/validate-data.mjs
+      - name: Run Detour self-check
+        run: npm test
 
       - name: Append validated event
         env:
@@ -48,7 +48,7 @@ jobs:
         run: node tools/append-event.mjs --type "$DETOUR_TYPE" --event "$DETOUR_EVENT"
 
       - name: Validate resulting data
-        run: node tools/validate-data.mjs
+        run: npm run validate:data
 
       - name: Commit data change
         run: |
