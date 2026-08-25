@@ -77,6 +77,14 @@ Raw payload aliases accepted by the builder include `kind → category`, `name �
 
 This file is intentionally not a simple event stream. It stores one upcoming plan plus wish-list and completed-date memories. Completed memories may include photo URLs; the UI renders them when present and falls back to the existing soft placeholders otherwise.
 
+Date writes therefore use explicit mutations rather than pretending every change is one append-only event. The planned write contract is:
+
+- `date-plan` — replace the single `next` plan. Required: `place`. Optional: `at`, `planA`, `planB`, `note`.
+- `date-wish` — append one place to `wishlist`. Required: `place`. Optional: `note`.
+- `date-memory` — append one completed date to `memories`. Required: `title`. Optional: `at`, `place`, `note`, `photos`.
+
+These three mutations must remain separate at the write boundary: planning a date is not the same operation as saving a wish, and neither is the same as recording a completed memory. `date-memory.photos`, when present, is an array of non-empty URL/path strings. The writer implementation for these mutations is intentionally deferred until the workflow and Shortcut inputs are designed around this contract.
+
 ## Rules
 
 - `at` and `updatedAt` use ISO 8601 with an explicit timezone offset.
