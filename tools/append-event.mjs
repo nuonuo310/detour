@@ -55,7 +55,8 @@ if (!event.id) {
   event.id = `${type}-${stamp}`;
 }
 
-const root = path.resolve(import.meta.dirname, '..');
+const repoRoot = path.resolve(import.meta.dirname, '..');
+const root = process.env.DETOUR_ROOT ? path.resolve(process.env.DETOUR_ROOT) : repoRoot;
 const file = path.join(root, 'data', TYPES[type].file);
 const raw = await fs.readFile(file, 'utf8');
 const data = JSON.parse(raw);
