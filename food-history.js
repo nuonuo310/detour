@@ -1,5 +1,5 @@
 (() => {
-  if (!document.body.classList.contains('food-page') || !window.DetourData) return;
+  if (!document.body.classList.contains('food-page') || typeof DetourData === 'undefined') return;
 
   const pad = n => String(n).padStart(2, '0');
   const time = value => {
