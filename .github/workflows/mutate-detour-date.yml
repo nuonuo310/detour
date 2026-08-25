@@ -1,0 +1,66 @@
+name: Mutate Detour Date
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Date mutation action
+        required: true
+        type: choice
+        options:
+          - date-plan
+          - date-wish
+          - date-memory
+      payload:
+        description: Date mutation payload JSON
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: detour-data-writer
+  cancel-in-progress: false
+
+jobs:
+  mutate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Detour self-check
+        run: npm test
+
+      - name: Apply date mutation
+        env:
+          DETOUR_ACTION: ${{ inputs.action }}
+          DETOUR_PAYLOAD: ${{ inputs.payload }}
+        run: |
+          node tools/mutate-date.mjs --action "$DETOUR_ACTION" --payload "$DETOUR_PAYLOAD"
+
+      - name: Validate resulting data
+        run: npm run validate:data
+
+      - name: Commit date change
+        env:
+          DETOUR_ACTION: ${{ inputs.action }}
+        run: |
+          if git diff --quiet -- data/date.json; then
+            echo "No date change to commit."
+            exit 0
+          fi
+          git config user.name "detour-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/date.json
+          git commit -m "data: apply ${DETOUR_ACTION}"
+          git push origin HEAD:dev
