@@ -1,0 +1,57 @@
+name: Append Detour Event
+
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        description: Event type
+        required: true
+        type: choice
+        options:
+          - wake
+          - music
+          - food
+      event:
+        description: Normalized event JSON
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: detour-data-writer
+  cancel-in-progress: false
+
+jobs:
+  append:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Append validated event
+        env:
+          DETOUR_TYPE: ${{ inputs.type }}
+          DETOUR_EVENT: ${{ inputs.event }}
+        run: node tools/append-event.mjs --type "$DETOUR_TYPE" --event "$DETOUR_EVENT"
+
+      - name: Commit data change
+        run: |
+          if git diff --quiet -- data; then
+            echo "No data change to commit."
+            exit 0
+          fi
+          git config user.name "detour-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/*.json
+          git commit -m "data: append ${{ inputs.type }} event"
+          git push origin HEAD:dev
