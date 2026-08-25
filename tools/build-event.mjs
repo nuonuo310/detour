@@ -22,7 +22,17 @@ try {
   process.exit(1);
 }
 
-const at = payload.at || new Date().toISOString();
+function nowAtOffset(offsetMinutes = 480) {
+  const d = new Date(Date.now() + offsetMinutes * 60_000);
+  const iso = d.toISOString().replace('Z', '');
+  const sign = offsetMinutes >= 0 ? '+' : '-';
+  const absolute = Math.abs(offsetMinutes);
+  const hh = String(Math.floor(absolute / 60)).padStart(2, '0');
+  const mm = String(absolute % 60).padStart(2, '0');
+  return `${iso}${sign}${hh}:${mm}`;
+}
+
+const at = payload.at || nowAtOffset();
 const base = { at };
 let event;
 
