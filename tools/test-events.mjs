@@ -52,6 +52,20 @@ for (const item of cases) {
   }
 }
 
+const fallbackRun = spawnSync(process.execPath, [build, '--type', 'music', '--payload', JSON.stringify({ song: 'Fallback Song' })], { encoding: 'utf8' });
+if (fallbackRun.status !== 0) {
+  console.error('✗ builder fallback timestamp could not be generated');
+  failed = true;
+} else {
+  const fallbackEvent = JSON.parse(fallbackRun.stdout.trim());
+  if (!/\+08:00$/.test(fallbackEvent.at)) {
+    console.error(`✗ builder fallback timestamp must use +08:00, got ${fallbackEvent.at}`);
+    failed = true;
+  } else {
+    console.log('✓ builder fallback timestamp uses +08:00');
+  }
+}
+
 const bad = spawnSync(process.execPath, [append, '--type', 'music', '--event', JSON.stringify({ at: 'not-a-date', title: 'Bad' })], { encoding: 'utf8' });
 if (bad.status === 0) {
   console.error('✗ append-event accepted an invalid timestamp');
