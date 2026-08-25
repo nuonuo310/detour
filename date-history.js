@@ -1,5 +1,12 @@
 (() => {
-  const esc = value => String(value ?? '').replace(/[&<>'\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[ch]));
+  const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[ch]));
+
   const fmt = value => {
     const d = value ? new Date(value) : null;
     if (!d || Number.isNaN(d.valueOf())) return '日期待定';
