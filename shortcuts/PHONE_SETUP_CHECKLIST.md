@@ -6,6 +6,16 @@ This is the one-time setup we will complete together on the iPhone before real D
 
 Allow a Shortcut on the user's phone to trigger the existing GitHub Actions workflows without putting any credential into the Detour repository or GitHub Pages code.
 
+## Current checkpoint
+
+- Fine-grained GitHub token is limited to `nuonuo310/detour`.
+- Token has Actions read/write permission.
+- iPhone Shortcut can successfully call GitHub `workflow_dispatch`.
+- `dry-run-detour-event.yml` has completed green end-to-end from the phone.
+- The next phone step is to duplicate the working Dry Run Shortcut and change only the workflow filename to `append-detour-event.yml` for the first real music write.
+
+Do not overwrite the working Dry Run Shortcut. Keep it as a permanent safe diagnostic path.
+
 ## What must stay private
 
 - GitHub personal access token or equivalent credential
@@ -27,7 +37,7 @@ Headers:
 - `X-GitHub-Api-Version: 2022-11-28`
 - `Content-Type: application/json`
 
-A successful GitHub workflow dispatch normally returns HTTP `204 No Content`. This means GitHub accepted the dispatch request; the workflow can still fail later, so we should inspect the Actions run during first setup.
+A successful GitHub workflow dispatch normally returns HTTP `204 No Content`. This means GitHub accepted the dispatch request; the workflow can still fail later, so inspect the Actions run during first setup.
 
 ## Event writes: wake / music / food
 
@@ -56,17 +66,18 @@ Example music payload:
 }
 ```
 
-The repository normalizes natural fields through `tools/build-event.mjs`; the Shortcut does not need to construct the final Detour schema itself.
+The repository normalizes natural fields through `tools/build-event.mjs`; the Shortcut does not need to construct the final Detour schema itself. The normalizer also tolerates common iOS Shortcut transport wrappers and escaping discovered during the first phone connection.
 
-Safe first connection order:
+First real-write sequence:
 
-1. Create the minimum-scope GitHub credential on the user's account.
-2. Store it only inside the iPhone Shortcut request header.
-3. Point the first request at `dry-run-detour-event.yml`.
-4. Send one harmless music test payload.
-5. Confirm the workflow run succeeds and real `data/*.json` files remain unchanged.
-6. Keep the same request body and switch only the workflow filename to `append-detour-event.yml`.
-7. Send one clearly identified real-world test and verify the page updates.
+1. Duplicate the proven `Detour Dry Run` Shortcut.
+2. Rename the copy to `Detour Write`.
+3. Change only the endpoint workflow filename from `dry-run-detour-event.yml` to `append-detour-event.yml`.
+4. Leave headers, `ref`, `inputs`, `type`, and payload structure unchanged.
+5. Send one intentional real music record, not a disposable test record.
+6. Confirm the `Append Detour Event` Actions run is green.
+7. Confirm `data/music.json` contains exactly one new record and the page renders it.
+8. Keep the Dry Run Shortcut for later diagnostics.
 
 ## Date writes: plan / wish / memory
 
@@ -90,7 +101,7 @@ Supported actions:
 - `date-wish` — append one place to the wish list.
 - `date-memory` — append one completed date memory, optionally with photos.
 
-Use the date dry-run workflow first, then switch only the workflow filename to the real date mutation workflow after the dry run succeeds. The `action + payload` body stays the same.
+Use `dry-run-date-mutation.yml` first, then switch only the workflow filename to `mutate-detour-date.yml` after the date dry run succeeds. The `action + payload` body stays the same.
 
 ## Shortcut design rules
 
