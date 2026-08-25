@@ -33,8 +33,10 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Run Detour self-check
+        run: npm test
+
       - name: Build normalized event
-        id: build
         env:
           DETOUR_TYPE: ${{ inputs.type }}
           DETOUR_PAYLOAD: ${{ inputs.payload }}
