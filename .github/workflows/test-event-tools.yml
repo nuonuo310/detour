@@ -1,0 +1,36 @@
+name: Test Detour Event Tools
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'tools/**'
+      - 'data/examples/**'
+      - '.github/workflows/test-event-tools.yml'
+  pull_request:
+    paths:
+      - 'tools/**'
+      - 'data/examples/**'
+      - '.github/workflows/test-event-tools.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run event regression tests
+        run: node tools/test-events.mjs
+
+      - name: Validate committed data
+        run: node tools/validate-data.mjs
