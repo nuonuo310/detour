@@ -51,8 +51,10 @@ The browser is deliberately read-only. Credentials must never be embedded in the
 - Manual GitHub Actions write bridge: done
 - Safe dry-run GitHub Actions bridge: done
 - iPhone Shortcut bridge design + setup checklist: done
-- Real authenticated Shortcut connection: waiting for one-time device setup
-- Wake automation connection: next integration step
+- Real authenticated iPhone → GitHub Actions connection: done
+- iPhone dry-run music payload end-to-end: passed
+- Real event write from iPhone: next integration step
+- Wake automation connection: after real event write verification
 - Real photos / map route data: later integration step
 
 ## Repository layout
