@@ -1,21 +1,10 @@
 (() => {
-  const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+  const esc = value => String(value ?? '').replace(/[&<>'\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[ch]));
   const fmt = value => {
     const d = value ? new Date(value) : null;
     if (!d || Number.isNaN(d.valueOf())) return '日期待定';
     return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
   };
-
-  async function load() {
-    try {
-      const response = await fetch('data/date.json', { cache: 'no-store' });
-      if (!response.ok) throw new Error(String(response.status));
-      return await response.json();
-    } catch (error) {
-      console.warn('Detour date archive unavailable:', error);
-      return null;
-    }
-  }
 
   function photo(url, label, className = '') {
     if (!url) return `<div class="date-photo-empty ${className}"><span>${esc(label)}</span></div>`;
@@ -57,9 +46,13 @@
     }).join('');
   }
 
-  load().then(data => {
+  async function render() {
+    if (!document.body.classList.contains('date-page') || typeof DetourData === 'undefined') return;
+    const data = await DetourData.load('date');
     if (!data) return;
     renderWishlist(data.wishlist || []);
     renderMemories(data.memories || []);
-  });
+  }
+
+  render();
 })();
