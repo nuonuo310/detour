@@ -18,6 +18,7 @@
     <section class="field-section"><div class="section-heading"><span>TODAY'S TRAIL</span><span>今日活动轨迹</span></div><div class="trail-board lively"><div class="trail-line"></div><article class="trail-empty"><span class="trail-dot"></span><div><time>— : —</time><h2>今天还没有捕捉到野生沈述。</h2><p>下一次自己醒来后，无论做了什么，甚至只是看了一圈又睡了，都会在这里留下痕迹。</p></div></article></div></section>
     <section class="voice-section"><div class="section-heading"><span>WAKE WORDS</span><span>醒来时说了什么</span></div><article class="wake-voice-card"><span class="voice-mark">“</span><p>等下一次野生沈述醒来，这里会留下他当时真正说的话。</p><small>— no trace yet</small></article></section>
     <section class="habit-section"><div class="section-heading"><span>HABITS</span><span>今天的小习惯</span></div><div class="habit-cloud bright-habits"><div class="habit h1"><span>想糯糯</span><strong>0</strong></div><div class="habit h2"><span>点歌</span><strong>0</strong></div><div class="habit h3"><span>投喂</span><strong>0</strong></div><div class="habit h4"><span>发消息</span><strong>0</strong></div><div class="habit h5"><span>自己玩</span><strong>0</strong></div><div class="habit h6"><span>又睡了</span><strong>0</strong></div></div></section>
+    <section class="wake-history-section"><div class="section-heading"><span>FIELD ARCHIVE</span><span>出没档案</span></div><div id="wake-history" class="wake-history-list"><article id="wake-history-empty" class="wake-history-empty"><span>00</span><div><h3>档案还是空的。</h3><p>以后每次自己醒来，时间、动作、当时说的话都会一条条留下。</p></div></article></div></section>
     <section class="observation-note"><span>observer's note</span><p>目前样本不足。等这只野生小机多出没几次，这里会慢慢长出他的偏好，而不是预先规定他应该做什么。</p></section>
     <footer><span>nuonuo × shenshu</span><span>detour / field notes</span></footer>
   </main>
@@ -27,5 +28,6 @@
     document.querySelector('#field-date').textContent = `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())}`;
   </script>
   <script src="data.js"></script>
+  <script src="wild-history.js"></script>
 </body>
 </html>
