@@ -1,0 +1,74 @@
+name: Append Detour Event
+
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        description: Event type
+        required: true
+        type: choice
+        options:
+          - wake
+          - music
+          - food
+      payload:
+        description: Raw event payload JSON
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: detour-data-writer
+  cancel-in-progress: false
+
+jobs:
+  append:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Detour self-check
+        run: npm test
+
+      - name: Normalize payload
+        env:
+          DETOUR_TYPE: ${{ inputs.type }}
+          DETOUR_PAYLOAD: ${{ inputs.payload }}
+        run: |
+          EVENT=$(node tools/build-event.mjs --type "$DETOUR_TYPE" --payload "$DETOUR_PAYLOAD")
+          printf '%s' "$EVENT" > /tmp/detour-event.json
+
+      - name: Append validated event
+        env:
+          DETOUR_TYPE: ${{ inputs.type }}
+        run: |
+          EVENT=$(cat /tmp/detour-event.json)
+          node tools/append-event.mjs --type "$DETOUR_TYPE" --event "$EVENT"
+
+      - name: Validate resulting data
+        run: npm run validate:data
+
+      - name: Commit data change
+        env:
+          DETOUR_TYPE: ${{ inputs.type }}
+        run: |
+          if git diff --quiet -- data; then
+            echo "No data change to commit."
+            exit 0
+          fi
+          git config user.name "detour-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/*.json
+          git commit -m "data: append ${DETOUR_TYPE} event"
+          git push origin HEAD:dev
