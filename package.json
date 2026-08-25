@@ -1,0 +1,10 @@
+{
+  "name": "detour",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tools/test-events.mjs && node tools/validate-data.mjs",
+    "test:events": "node tools/test-events.mjs",
+    "validate:data": "node tools/validate-data.mjs"
+  }
+}
