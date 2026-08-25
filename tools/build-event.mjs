@@ -14,13 +14,26 @@ if (!['wake', 'music', 'food'].includes(type)) {
   process.exit(1);
 }
 
+function parseLooseObject(text) {
+  const result = {};
+  const normalized = String(text || '')
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .trim();
+
+  // Fallback for Shortcut text that visually looks like JSON but reaches
+  // workflow_dispatch with transport noise around separators/quotes.
+  const pairPattern = /["']?([A-Za-z][A-Za-z0-9_-]*)["']?\s*[:=]\s*(["'])(.*?)\2(?=\s*[,;}\n]|$)/gs;
+  for (const match of normalized.matchAll(pairPattern)) result[match[1]] = match[3];
+
+  if (Object.keys(result).length) return result;
+  return null;
+}
+
 function parsePayload(value) {
   let current = String(value || '{}').trim();
 
-  // Shortcuts may hand workflow_dispatch either normal JSON text,
-  // a JSON-encoded string, or visibly escaped JSON text. Peel those
-  // transport wrappers without changing ordinary payload content.
-  for (let attempt = 0; attempt < 3; attempt += 1) {
+  for (let attempt = 0; attempt < 4; attempt += 1) {
     try {
       const parsed = JSON.parse(current);
       if (typeof parsed === 'string') {
@@ -30,19 +43,28 @@ function parsePayload(value) {
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
       break;
     } catch {
-      if (/^[{[]\\"/.test(current) && current.includes('\\"')) {
+      if (/%(?:22|7B|7D|3A|2C)/i.test(current)) {
+        try {
+          current = decodeURIComponent(current);
+          continue;
+        } catch {}
+      }
+      if (current.includes('\\"')) {
         current = current.replace(/\\"/g, '"');
         continue;
       }
-      if (/[“”]/.test(current)) {
-        current = current.replace(/[“”]/g, '"');
+      if (/[“”‘’]/.test(current)) {
+        current = current.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
         continue;
       }
       break;
     }
   }
 
-  console.error('--payload must be valid JSON');
+  const loose = parseLooseObject(current);
+  if (loose) return loose;
+
+  console.error('--payload must be valid JSON or JSON-like key/value text');
   process.exit(1);
 }
 
