@@ -14,13 +14,39 @@ if (!['wake', 'music', 'food'].includes(type)) {
   process.exit(1);
 }
 
-let payload = {};
-try {
-  payload = JSON.parse(pick('payload') || '{}');
-} catch {
+function parsePayload(value) {
+  let current = String(value || '{}').trim();
+
+  // Shortcuts may hand workflow_dispatch either normal JSON text,
+  // a JSON-encoded string, or visibly escaped JSON text. Peel those
+  // transport wrappers without changing ordinary payload content.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const parsed = JSON.parse(current);
+      if (typeof parsed === 'string') {
+        current = parsed.trim();
+        continue;
+      }
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+      break;
+    } catch {
+      if (/^[{[]\\"/.test(current) && current.includes('\\"')) {
+        current = current.replace(/\\"/g, '"');
+        continue;
+      }
+      if (/[“”]/.test(current)) {
+        current = current.replace(/[“”]/g, '"');
+        continue;
+      }
+      break;
+    }
+  }
+
   console.error('--payload must be valid JSON');
   process.exit(1);
 }
+
+const payload = parsePayload(pick('payload'));
 
 function nowAtOffset(offsetMinutes = 480) {
   const d = new Date(Date.now() + offsetMinutes * 60_000);
