@@ -38,7 +38,7 @@ The repository normalizes aliases such as `song → title`, `link → url`, and 
 
 ## Date workflow request
 
-Use `.github/workflows/dry-run-detour-date.yml` first, then switch only the workflow filename to `.github/workflows/mutate-detour-date.yml` for real writes.
+Use `.github/workflows/dry-run-date-mutation.yml` first, then switch only the workflow filename to `.github/workflows/mutate-detour-date.yml` for real writes.
 
 ```json
 {
