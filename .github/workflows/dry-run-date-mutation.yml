@@ -1,0 +1,49 @@
+name: Dry Run Detour Date Mutation
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Date mutation
+        required: true
+        type: choice
+        options:
+          - date-plan
+          - date-wish
+          - date-memory
+      payload:
+        description: Date mutation payload JSON
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Detour self-check
+        run: npm test
+
+      - name: Test date mutation without touching real data
+        env:
+          DETOUR_ACTION: ${{ inputs.action }}
+          DETOUR_PAYLOAD: ${{ inputs.payload }}
+        run: |
+          TMP_ROOT=$(mktemp -d)
+          mkdir -p "$TMP_ROOT/data"
+          cp data/*.json "$TMP_ROOT/data/"
+          DETOUR_ROOT="$TMP_ROOT" node tools/mutate-date.mjs --action "$DETOUR_ACTION" --payload "$DETOUR_PAYLOAD"
+          DETOUR_ROOT="$TMP_ROOT" node tools/validate-data.mjs
+          echo "Dry run passed. Real Detour date data was not changed."
