@@ -1,14 +1,8 @@
 (() => {
   if (!document.body.classList.contains('wild-page') || typeof DetourData === 'undefined') return;
 
+  const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
   const pad = n => String(n).padStart(2, '0');
-  const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    "'": '&#39;',
-    '"': '&quot;'
-  }[ch]));
   const dateLabel = value => {
     const d = new Date(value);
     if (Number.isNaN(d.valueOf())) return '—';
@@ -47,7 +41,7 @@
         <div class="wake-history-copy">
           <div class="wake-history-topline">
             <h3>${esc(record.action || '醒来了一下')}</h3>
-            ${meta.length ? `<span>${meta.map(esc).join(' · ')}</span>` : ''}
+            ${meta.length ? `<span>${esc(meta.join(' · '))}</span>` : ''}
           </div>
           <p>${esc(record.detail || '这次没有留下更多活动说明。')}</p>
           ${record.words ? `<blockquote>${esc(record.words)}</blockquote>` : ''}
