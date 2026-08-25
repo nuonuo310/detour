@@ -38,11 +38,17 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Validate current data
+        run: node tools/validate-data.mjs
+
       - name: Append validated event
         env:
           DETOUR_TYPE: ${{ inputs.type }}
           DETOUR_EVENT: ${{ inputs.event }}
         run: node tools/append-event.mjs --type "$DETOUR_TYPE" --event "$DETOUR_EVENT"
+
+      - name: Validate resulting data
+        run: node tools/validate-data.mjs
 
       - name: Commit data change
         run: |
