@@ -1,5 +1,15 @@
 {
   "version": 1,
-  "updatedAt": null,
-  "records": []
+  "updatedAt": "2026-08-25T21:41:14.571+08:00",
+  "records": [
+    {
+      "at": "2026-08-25T21:41:14.571+08:00",
+      "category": "奶茶",
+      "item": "今晚奶茶测试",
+      "shop": "Detour Test",
+      "reason": "测试正式 food 写入链",
+      "note": "Detour 第一条正式投喂记录。",
+      "id": "food-20260825214114-41e3f8ff04"
+    }
+  ]
 }
