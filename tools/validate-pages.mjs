@@ -23,20 +23,30 @@ for (const page of pages) {
     continue;
   }
 
-  const refs = [...html.matchAll(/(?:src|href)=["']([^"'#?]+)["']/g)]
-    .map(match => match[1])
-    .filter(ref => !/^(?:https?:|mailto:|tel:|data:)/i.test(ref));
+  const refs = [...html.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map(match => match[1]);
 
   for (const ref of refs) {
-    const target = path.resolve(root, ref);
+    if (/^(?:https?:|mailto:|tel:|data:)/i.test(ref)) continue;
+
+    const [filePart, fragment] = ref.split('#', 2);
+    const cleanFile = (filePart || page).split('?')[0];
+    const target = path.resolve(root, cleanFile);
     if (!target.startsWith(root + path.sep) && target !== root) {
       fail(`${page} references path outside repository: ${ref}`);
       continue;
     }
+
     try {
       await fs.access(target);
     } catch {
-      fail(`${page} references missing file: ${ref}`);
+      fail(`${page} references missing file: ${cleanFile}`);
+      continue;
+    }
+
+    if (fragment && cleanFile.endsWith('.html')) {
+      const targetHtml = cleanFile === page ? html : await fs.readFile(target, 'utf8');
+      const ids = new Set([...targetHtml.matchAll(/\bid=["']([^"']+)["']/g)].map(match => match[1]));
+      if (!ids.has(fragment)) fail(`${page} references missing fragment #${fragment} in ${cleanFile}`);
     }
   }
 
