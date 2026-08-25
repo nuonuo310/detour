@@ -6,13 +6,11 @@ on:
       - dev
     paths:
       - 'data/**'
-      - 'tools/append-event.mjs'
-      - 'tools/validate-data.mjs'
+      - 'tools/**'
   pull_request:
     paths:
       - 'data/**'
-      - 'tools/append-event.mjs'
-      - 'tools/validate-data.mjs'
+      - 'tools/**'
 
 permissions:
   contents: read
@@ -31,3 +29,6 @@ jobs:
 
       - name: Validate Detour data
         run: node tools/validate-data.mjs
+
+      - name: Smoke-test event pipeline
+        run: node tools/test-event-pipeline.mjs
