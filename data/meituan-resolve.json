@@ -1,7 +1,7 @@
 {
-  "requestId": null,
-  "shareUrl": null,
-  "finalUrl": null,
-  "deepLink": null,
-  "resolvedAt": null
+  "shareUrl": "http://dpurl.cn/XdeBFhHz",
+  "finalUrl": "https://w.dianping.com/cube/evoke/meituan.html?url=imeituan%3A%2F%2Fwww.meituan.com%2Ffood%2Fdeal%3Fdid%3D1618314686%26poiid%3D160576919%26poiIdEncrypt%3DqB4r177e78a209be95e269b0249a5f76711afcbe64359ae9791ea0c22835b372728d8c3b41ad92aab6b9712d29261ce23d27a1vxu5&utm_term=AiphoneBgroupC12.64.203DcopyEmsiG0000000000000152854CF02F64A829565C5D74DFDAF16A16655384881282690020260825233144243&utm_source=appshare&utm_medium=iOSweb&utm_fromapp=copy&utm_sharesource=msi&lch=appshare_a96fcc6a7024a68eA5",
+  "deepLink": "imeituan://www.meituan.com/food/deal?did=1618314686&poiid=160576919&poiIdEncrypt=qB4r177e78a209be95e269b0249a5f76711afcbe64359ae9791ea0c22835b372728d8c3b41ad92aab6b9712d29261ce23d27a1vxu5",
+  "resolvedAt": "2026-08-25T16:58:14.756Z",
+  "requestId": "guava-test-001"
 }
