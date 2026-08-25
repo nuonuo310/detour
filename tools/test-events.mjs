@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 
@@ -57,6 +59,43 @@ if (bad.status === 0) {
 } else {
   console.log('✓ append-event rejects invalid timestamps');
 }
+
+const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'detour-test-'));
+fs.mkdirSync(path.join(tempRoot, 'data'));
+for (const name of ['wake', 'music', 'food']) {
+  fs.writeFileSync(path.join(tempRoot, 'data', `${name}.json`), JSON.stringify({ version: 1, updatedAt: null, records: [] }, null, 2));
+}
+
+const sameSecondA = { at: '2026-08-25T15:10:00+08:00', title: 'Song A', artist: 'Artist' };
+const sameSecondB = { at: '2026-08-25T15:10:00+08:00', title: 'Song B', artist: 'Artist' };
+
+const runAppend = event => spawnSync(
+  process.execPath,
+  [append, '--type', 'music', '--event', JSON.stringify(event)],
+  { encoding: 'utf8', env: { ...process.env, DETOUR_ROOT: tempRoot } }
+);
+
+const a1 = runAppend(sameSecondA);
+const a2 = runAppend(sameSecondA);
+const b1 = runAppend(sameSecondB);
+if (a1.status !== 0 || a2.status !== 0 || b1.status !== 0) {
+  console.error('✗ append-event deterministic-id test could not write fixtures');
+  failed = true;
+} else {
+  const music = JSON.parse(fs.readFileSync(path.join(tempRoot, 'data', 'music.json'), 'utf8'));
+  const ids = music.records.map(r => r.id);
+  if (music.records.length !== 2) {
+    console.error(`✗ duplicate retry or same-second separation failed: expected 2 records, got ${music.records.length}`);
+    failed = true;
+  } else if (new Set(ids).size !== 2) {
+    console.error('✗ same-second distinct events produced the same id');
+    failed = true;
+  } else {
+    console.log('✓ append-event deduplicates retries and separates same-second events');
+  }
+}
+
+fs.rmSync(tempRoot, { recursive: true, force: true });
 
 if (failed) process.exit(1);
 console.log('\nDetour event pipeline self-check passed.');
