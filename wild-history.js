@@ -1,7 +1,14 @@
 (() => {
-  if (!document.body.classList.contains('wild-page')) return;
+  if (!document.body.classList.contains('wild-page') || typeof DetourData === 'undefined') return;
 
   const pad = n => String(n).padStart(2, '0');
+  const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[ch]));
   const dateLabel = value => {
     const d = new Date(value);
     if (Number.isNaN(d.valueOf())) return '—';
@@ -34,16 +41,16 @@
 
       article.innerHTML = `
         <div class="wake-history-time">
-          <strong>${timeLabel(record.at)}</strong>
-          <span>${dateLabel(record.at)}</span>
+          <strong>${esc(timeLabel(record.at))}</strong>
+          <span>${esc(dateLabel(record.at))}</span>
         </div>
         <div class="wake-history-copy">
           <div class="wake-history-topline">
-            <h3>${record.action || '醒来了一下'}</h3>
-            ${meta.length ? `<span>${meta.join(' · ')}</span>` : ''}
+            <h3>${esc(record.action || '醒来了一下')}</h3>
+            ${meta.length ? `<span>${meta.map(esc).join(' · ')}</span>` : ''}
           </div>
-          <p>${record.detail || '这次没有留下更多活动说明。'}</p>
-          ${record.words ? `<blockquote>${record.words}</blockquote>` : ''}
+          <p>${esc(record.detail || '这次没有留下更多活动说明。')}</p>
+          ${record.words ? `<blockquote>${esc(record.words)}</blockquote>` : ''}
         </div>`;
       host.appendChild(article);
     });
