@@ -10,16 +10,10 @@
 
   async function renderHistory() {
     const host = document.querySelector('.playlist-empty');
-    if (!host) return;
+    if (!host || typeof DetourData === 'undefined') return;
 
-    let data;
-    try {
-      const response = await fetch('data/music.json', { cache: 'no-store' });
-      if (!response.ok) return;
-      data = await response.json();
-    } catch {
-      return;
-    }
+    const data = await DetourData.load('music');
+    if (!data) return;
 
     const records = [...(data.records || [])].sort((a, b) => new Date(b.at) - new Date(a.at));
     if (!records.length) return;
