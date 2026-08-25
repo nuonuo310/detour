@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -30,7 +31,20 @@ function parseArgs(argv) {
 }
 
 function validDate(value) {
-  return typeof value === 'string' && value.includes('T') && !Number.isNaN(new Date(value).valueOf());
+  if (typeof value !== 'string') return false;
+  const explicitZone = /(Z|[+-]\d{2}:?\d{2})$/i.test(value);
+  return value.includes('T') && explicitZone && !Number.isNaN(new Date(value).valueOf());
+}
+
+function stableEventId(type, event) {
+  const canonical = JSON.stringify(Object.fromEntries(
+    Object.entries(event)
+      .filter(([key]) => key !== 'id')
+      .sort(([a], [b]) => a.localeCompare(b))
+  ));
+  const digest = crypto.createHash('sha256').update(`${type}:${canonical}`).digest('hex').slice(0, 10);
+  const stamp = event.at.replace(/[^0-9]/g, '').slice(0, 14);
+  return `${type}-${stamp}-${digest}`;
 }
 
 const args = parseArgs(process.argv.slice(2));
@@ -48,12 +62,9 @@ if (!event || Array.isArray(event) || typeof event !== 'object') fail('event mus
 for (const key of TYPES[type].required) {
   if (typeof event[key] !== 'string' || !event[key].trim()) fail(`${type}.${key} is required`);
 }
-if (!validDate(event.at)) fail('event.at must be an ISO date-time');
+if (!validDate(event.at)) fail('event.at must be an ISO date-time with an explicit timezone');
 
-if (!event.id) {
-  const stamp = event.at.replace(/[^0-9]/g, '').slice(0, 14);
-  event.id = `${type}-${stamp}`;
-}
+if (!event.id) event.id = stableEventId(type, event);
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const root = process.env.DETOUR_ROOT ? path.resolve(process.env.DETOUR_ROOT) : repoRoot;
