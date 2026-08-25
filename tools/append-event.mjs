@@ -82,5 +82,9 @@ data.records.push(event);
 data.records.sort((a, b) => new Date(b.at) - new Date(a.at));
 data.updatedAt = event.at;
 
+if (type === 'wake') {
+  data.status = typeof event.status === 'string' && event.status.trim() ? event.status.trim() : 'awake';
+}
+
 await fs.writeFile(file, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
 console.log(`Detour event appended: ${event.id} -> data/${TYPES[type].file}`);
