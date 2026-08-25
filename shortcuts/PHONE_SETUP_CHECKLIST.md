@@ -34,19 +34,34 @@ Body:
   "ref": "dev",
   "inputs": {
     "type": "music",
-    "event": "{...event JSON as a string...}"
+    "payload": "{...raw payload JSON as a string...}"
   }
 }
 ```
+
+The phone uses the same `type + payload` body for both dry-run and real append. Only the workflow filename changes.
+
+Example music payload:
+
+```json
+{
+  "song": "Song",
+  "artist": "Artist",
+  "link": "https://open.spotify.com/...",
+  "message": "给糯糯。"
+}
+```
+
+The repository normalizes those natural fields through `tools/build-event.mjs`; the Shortcut does not need to construct the final Detour schema itself.
 
 ## Safe first connection order
 
 1. Create the minimum-scope GitHub credential on the user's account.
 2. Store it only inside the iPhone Shortcut request header.
 3. Point the first request at the **Dry Run Detour Event** workflow.
-4. Send one harmless music test event.
+4. Send one harmless music test payload.
 5. Confirm the workflow run succeeds and real `data/*.json` files remain unchanged.
-6. Only then switch the Shortcut to the real **Append Detour Event** workflow.
+6. Keep the same request body and switch only the workflow filename to **Append Detour Event**.
 7. Send one clearly identified real-world test and verify the page updates.
 
 ## Expected HTTP behavior
