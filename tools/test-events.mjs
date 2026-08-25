@@ -14,7 +14,7 @@ const cases = [
   {
     type: 'wake',
     payload: { at: '2026-08-25T14:33:00+08:00', choice: '想糯糯', message: '醒了一下。' },
-    expect: e => e.action === '想糯糯' && e.words === '醒了一下。'
+    expect: e => e.action === '想糯糯' && e.words === '醒了一下。' && e.status === 'awake'
   },
   {
     type: 'music',
@@ -73,6 +73,24 @@ for (const payload of shortcutPayloads) {
   }
 }
 
+const wakeShortcut = spawnSync(process.execPath, [
+  build,
+  '--type', 'wake',
+  '--payload', JSON.stringify({ source: 'shortcut', trigger: 'manual_test', message: '哥哥，醒醒。', note: 'test' })
+], { encoding: 'utf8' });
+if (wakeShortcut.status !== 0) {
+  console.error('✗ wake Shortcut payload failed');
+  failed = true;
+} else {
+  const event = JSON.parse(wakeShortcut.stdout.trim());
+  if (event.action !== '发消息' || event.status !== 'awake' || event.words !== '哥哥，醒醒。') {
+    console.error('✗ wake Shortcut fallback mapping failed', event);
+    failed = true;
+  } else {
+    console.log('✓ wake Shortcut fallback maps to awake/message');
+  }
+}
+
 const fallbackRun = spawnSync(process.execPath, [build, '--type', 'music', '--payload', JSON.stringify({ song: 'Fallback Song' })], { encoding: 'utf8' });
 if (fallbackRun.status !== 0) {
   console.error('✗ builder fallback timestamp could not be generated');
@@ -127,6 +145,30 @@ if (a1.status !== 0 || a2.status !== 0 || b1.status !== 0) {
     failed = true;
   } else {
     console.log('✓ append-event deduplicates retries and separates same-second events');
+  }
+}
+
+const wakeEvent = {
+  at: '2026-08-25T15:20:00+08:00',
+  action: '发消息',
+  words: '醒了。',
+  status: 'awake'
+};
+const wakeWrite = spawnSync(
+  process.execPath,
+  [append, '--type', 'wake', '--event', JSON.stringify(wakeEvent)],
+  { encoding: 'utf8', env: { ...process.env, DETOUR_ROOT: tempRoot } }
+);
+if (wakeWrite.status !== 0) {
+  console.error('✗ wake append status test failed');
+  failed = true;
+} else {
+  const wake = JSON.parse(fs.readFileSync(path.join(tempRoot, 'data', 'wake.json'), 'utf8'));
+  if (wake.status !== 'awake') {
+    console.error(`✗ wake append did not update top-level status, got ${wake.status}`);
+    failed = true;
+  } else {
+    console.log('✓ wake append updates top-level status');
   }
 }
 
