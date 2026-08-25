@@ -13,6 +13,7 @@ const specs = {
 
 let errors = 0;
 const fail = message => { errors += 1; console.error(`✗ ${message}`); };
+const validDate = value => typeof value === 'string' && value.trim() && !Number.isNaN(new Date(value).valueOf());
 
 for (const [name, spec] of Object.entries(specs)) {
   const file = path.join(root, 'data', `${name}.json`);
@@ -35,7 +36,7 @@ for (const [name, spec] of Object.entries(specs)) {
     for (const key of spec.required) {
       if (typeof record[key] !== 'string' || !record[key].trim()) fail(`${name}.records[${index}].${key} is required`);
     }
-    if (record.at && Number.isNaN(new Date(record.at).valueOf())) fail(`${name}.records[${index}].at is invalid`);
+    if (record.at && !validDate(record.at)) fail(`${name}.records[${index}].at is invalid`);
     if (record.id) {
       if (ids.has(record.id)) fail(`${name}.json contains duplicate id ${record.id}`);
       ids.add(record.id);
@@ -58,6 +59,26 @@ try {
   if (date.version !== 1) fail('date.json version must be 1');
   if (!Array.isArray(date.wishlist)) fail('date.json wishlist must be an array');
   if (!Array.isArray(date.memories)) fail('date.json memories must be an array');
+  if (date.next != null) {
+    if (typeof date.next !== 'object' || Array.isArray(date.next)) fail('date.json next must be an object or null');
+    else {
+      if (typeof date.next.place !== 'string' || !date.next.place.trim()) fail('date.json next.place is required');
+      if (date.next.at && !validDate(date.next.at)) fail('date.json next.at is invalid');
+    }
+  }
+  if (Array.isArray(date.wishlist)) {
+    date.wishlist.forEach((item, index) => {
+      if (!item || typeof item !== 'object' || typeof item.place !== 'string' || !item.place.trim()) fail(`date.wishlist[${index}].place is required`);
+    });
+  }
+  if (Array.isArray(date.memories)) {
+    date.memories.forEach((memory, index) => {
+      if (!memory || typeof memory !== 'object') { fail(`date.memories[${index}] must be an object`); return; }
+      if (typeof memory.title !== 'string' || !memory.title.trim()) fail(`date.memories[${index}].title is required`);
+      if (memory.at && !validDate(memory.at)) fail(`date.memories[${index}].at is invalid`);
+      if (memory.photos != null && (!Array.isArray(memory.photos) || memory.photos.some(photo => typeof photo !== 'string' || !photo.trim()))) fail(`date.memories[${index}].photos must be an array of non-empty strings`);
+    });
+  }
   console.log('✓ data/date.json');
 } catch (error) {
   fail(`date.json cannot be parsed: ${error.message}`);
