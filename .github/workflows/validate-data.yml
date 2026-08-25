@@ -7,10 +7,12 @@ on:
     paths:
       - 'data/**'
       - 'tools/**'
+      - 'package.json'
   pull_request:
     paths:
       - 'data/**'
       - 'tools/**'
+      - 'package.json'
 
 permissions:
   contents: read
@@ -27,8 +29,5 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Validate Detour data
-        run: node tools/validate-data.mjs
-
-      - name: Smoke-test event pipeline
-        run: node tools/test-event-pipeline.mjs
+      - name: Run Detour checks
+        run: npm test
