@@ -1,0 +1,58 @@
+name: Dry Run Detour Event
+
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        description: Event type
+        required: true
+        type: choice
+        options:
+          - wake
+          - music
+          - food
+      payload:
+        description: Raw event payload JSON
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Detour self-check
+        run: npm test
+
+      - name: Build normalized event
+        env:
+          DETOUR_TYPE: ${{ inputs.type }}
+          DETOUR_PAYLOAD: ${{ inputs.payload }}
+        run: |
+          EVENT=$(node tools/build-event.mjs --type "$DETOUR_TYPE" --payload "$DETOUR_PAYLOAD")
+          echo "Normalized event: $EVENT"
+          printf '%s' "$EVENT" > /tmp/detour-event.json
+
+      - name: Test event without touching real data
+        env:
+          DETOUR_TYPE: ${{ inputs.type }}
+        run: |
+          TMP_ROOT=$(mktemp -d)
+          mkdir -p "$TMP_ROOT/data"
+          cp data/*.json "$TMP_ROOT/data/"
+          EVENT=$(cat /tmp/detour-event.json)
+          DETOUR_ROOT="$TMP_ROOT" node tools/append-event.mjs --type "$DETOUR_TYPE" --event "$EVENT"
+          DETOUR_ROOT="$TMP_ROOT" node tools/validate-data.mjs
+          echo "Dry run passed. Real Detour history was not changed."
