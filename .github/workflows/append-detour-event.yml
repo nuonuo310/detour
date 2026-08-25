@@ -11,8 +11,8 @@ on:
           - wake
           - music
           - food
-      event:
-        description: Normalized event JSON
+      payload:
+        description: Raw event payload JSON
         required: true
         type: string
 
@@ -41,16 +41,27 @@ jobs:
       - name: Run Detour self-check
         run: npm test
 
+      - name: Normalize payload
+        env:
+          DETOUR_TYPE: ${{ inputs.type }}
+          DETOUR_PAYLOAD: ${{ inputs.payload }}
+        run: |
+          EVENT=$(node tools/build-event.mjs --type "$DETOUR_TYPE" --payload "$DETOUR_PAYLOAD")
+          printf '%s' "$EVENT" > /tmp/detour-event.json
+
       - name: Append validated event
         env:
           DETOUR_TYPE: ${{ inputs.type }}
-          DETOUR_EVENT: ${{ inputs.event }}
-        run: node tools/append-event.mjs --type "$DETOUR_TYPE" --event "$DETOUR_EVENT"
+        run: |
+          EVENT=$(cat /tmp/detour-event.json)
+          node tools/append-event.mjs --type "$DETOUR_TYPE" --event "$EVENT"
 
       - name: Validate resulting data
         run: npm run validate:data
 
       - name: Commit data change
+        env:
+          DETOUR_TYPE: ${{ inputs.type }}
         run: |
           if git diff --quiet -- data; then
             echo "No data change to commit."
@@ -59,5 +70,5 @@ jobs:
           git config user.name "detour-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/*.json
-          git commit -m "data: append ${{ inputs.type }} event"
+          git commit -m "data: append ${DETOUR_TYPE} event"
           git push origin HEAD:dev
