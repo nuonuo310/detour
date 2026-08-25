@@ -52,6 +52,27 @@ for (const item of cases) {
   }
 }
 
+const shortcutPayloads = [
+  JSON.stringify(JSON.stringify({ song: 'Shortcut Song', artist: 'Phone' })),
+  '{\\"song\\":\\"Shortcut Song\\",\\"artist\\":\\"Phone\\"}',
+  '{“song”:“Shortcut Song”,“artist”:“Phone”}'
+];
+for (const payload of shortcutPayloads) {
+  const run = spawnSync(process.execPath, [build, '--type', 'music', '--payload', payload], { encoding: 'utf8' });
+  if (run.status !== 0) {
+    console.error(`✗ builder rejected Shortcut-style payload: ${payload}`);
+    failed = true;
+    continue;
+  }
+  const event = JSON.parse(run.stdout.trim());
+  if (event.title !== 'Shortcut Song' || event.artist !== 'Phone') {
+    console.error('✗ Shortcut-style payload mapping failed', event);
+    failed = true;
+  } else {
+    console.log('✓ builder accepts Shortcut-style payload');
+  }
+}
+
 const fallbackRun = spawnSync(process.execPath, [build, '--type', 'music', '--payload', JSON.stringify({ song: 'Fallback Song' })], { encoding: 'utf8' });
 if (fallbackRun.status !== 0) {
   console.error('✗ builder fallback timestamp could not be generated');
