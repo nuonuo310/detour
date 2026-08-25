@@ -21,8 +21,6 @@ function parseLooseObject(text) {
     .replace(/[‘’]/g, "'")
     .trim();
 
-  // Fallback for Shortcut text that visually looks like JSON but reaches
-  // workflow_dispatch with transport noise around separators/quotes.
   const pairPattern = /["']?([A-Za-z][A-Za-z0-9_-]*)["']?\s*[:=]\s*(["'])(.*?)\2(?=\s*[,;}\n]|$)/gs;
   for (const match of normalized.matchAll(pairPattern)) result[match[1]] = match[3];
 
@@ -85,12 +83,14 @@ const base = { at };
 let event;
 
 if (type === 'wake') {
+  const inferredAction = payload.message || payload.words || payload.trigger ? '发消息' : '又睡了';
   event = {
     ...base,
-    action: payload.action || payload.choice || '又睡了',
-    detail: payload.detail || payload.reason || '',
+    action: payload.action || payload.choice || inferredAction,
+    detail: payload.detail || payload.reason || payload.note || payload.trigger || '',
     words: payload.words || payload.message || '',
-    tags: Array.isArray(payload.tags) ? payload.tags : []
+    tags: Array.isArray(payload.tags) ? payload.tags : [],
+    status: payload.status || 'awake'
   };
 } else if (type === 'music') {
   event = {
