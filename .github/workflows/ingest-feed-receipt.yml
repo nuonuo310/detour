@@ -31,22 +31,26 @@ jobs:
           if (!match) throw new Error('missing detour receipt payload');
           const receipt = JSON.parse(decodeURIComponent(match[1].trim()));
           if (!receipt.foodId || !receipt.text || !receipt.createdAt) throw new Error('invalid receipt payload');
+          const markdownImage = body.match(/!\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/)?.[1];
+          const githubAttachment = body.match(/https:\/\/github\.com\/user-attachments\/assets\/[A-Za-z0-9-]+/)?.[0];
+          const photo = markdownImage || githubAttachment || receipt.photo || null;
           const path = 'data/food-receipts.json';
           const data = JSON.parse(fs.readFileSync(path, 'utf8'));
           data.receipts = Array.isArray(data.receipts) ? data.receipts : [];
-          const existing = data.receipts.findIndex(r => r.foodId === receipt.foodId);
           const clean = {
             id: String(receipt.id || `receipt-${Date.now()}`),
             foodId: String(receipt.foodId),
             text: String(receipt.text).slice(0, 500),
-            photo: receipt.photo || null,
+            photo,
             createdAt: String(receipt.createdAt),
             readByShenshu: false,
             readAt: null,
             source: 'github-issue'
           };
+          const existing = data.receipts.findIndex(r => r.id === clean.id);
           if (existing >= 0) data.receipts[existing] = clean;
           else data.receipts.unshift(clean);
+          data.receipts.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
           data.updatedAt = new Date().toISOString();
           fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
           NODE
