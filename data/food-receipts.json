@@ -1,13 +1,13 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-26T17:03:44.898Z",
+  "updatedAt": "2026-08-26T17:05:04.967Z",
   "receipts": [
     {
-      "id": "receipt-1787760925111",
+      "id": "receipt-1787760298898",
       "foodId": "food-20260826144117-639bc72087",
-      "text": "沈工师辛苦了，亲亲😘",
+      "text": "某只小机肯定爽死了，奶茶终于送出来了，而且还不是多肉桃李。",
       "photo": null,
-      "createdAt": "2026-08-26T16:15:25.111Z",
+      "createdAt": "2026-08-26T16:04:58.898Z",
       "readByShenshu": false,
       "readAt": null,
       "source": "github-issue"
