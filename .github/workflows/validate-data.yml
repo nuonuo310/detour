@@ -1,0 +1,33 @@
+name: Validate Detour Data
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'data/**'
+      - 'tools/**'
+      - 'package.json'
+  pull_request:
+    paths:
+      - 'data/**'
+      - 'tools/**'
+      - 'package.json'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Detour checks
+        run: npm test

@@ -1,0 +1,40 @@
+.wild-page{position:relative;overflow-x:hidden;background:radial-gradient(circle at 12% 8%,rgba(236,246,247,.96),transparent 23rem),radial-gradient(circle at 90% 24%,rgba(216,200,255,.56),transparent 25rem),radial-gradient(circle at 18% 76%,rgba(251,248,239,.8),transparent 24rem),linear-gradient(160deg,#f7fbfa 0%,#dfecef 48%,#eee8f8 100%)}
+.wild-page .shell{position:relative;z-index:2}
+.wild-orb{position:absolute;z-index:0;border-radius:50%;filter:blur(4px);opacity:.55;pointer-events:none;animation:float-orb 9s ease-in-out infinite}
+.orb-a{width:140px;height:140px;right:-46px;top:170px;background:rgba(184,154,255,.28)}
+.orb-b{width:110px;height:110px;left:-36px;top:470px;background:rgba(160,201,215,.34);animation-delay:-3s}
+.orb-c{width:90px;height:90px;right:12px;top:860px;background:rgba(251,223,183,.28);animation-delay:-6s}
+@keyframes float-orb{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(0,16px,0) scale(1.06)}}
+
+.field-weather{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;margin:0 0 16px;padding:12px;border:1px solid rgba(255,255,255,.72);border-radius:22px;background:linear-gradient(135deg,rgba(255,255,255,.6),rgba(239,230,255,.46));box-shadow:0 14px 36px rgba(74,92,103,.06);backdrop-filter:blur(18px)}
+.field-weather div{min-width:0;padding:4px 8px}.field-weather div+div{border-left:1px solid rgba(52,69,77,.08)}
+.field-weather span{display:block;margin-bottom:4px;color:var(--muted);font-size:8px;letter-spacing:.15em}.field-weather strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Georgia,"Songti SC",serif;font-size:13px;font-weight:400}
+
+.wake-summary{background:linear-gradient(90deg,rgba(255,255,255,.18),rgba(255,255,255,.44),rgba(255,255,255,.18));border-radius:20px;overflow:hidden}
+.status-chip{position:relative;overflow:hidden}.status-chip::after{content:"";position:absolute;inset:-8px;background:radial-gradient(circle at 25% 50%,rgba(160,201,215,.22),transparent 48%);animation:chip-breathe 3.2s ease-in-out infinite}
+.status-chip i{position:relative;z-index:1;animation:status-pulse 2.8s ease-in-out infinite}.status-chip{z-index:1}
+@keyframes status-pulse{0%,100%{transform:scale(1);opacity:.72}50%{transform:scale(1.28);opacity:1}}
+@keyframes chip-breathe{0%,100%{opacity:.38}50%{opacity:.85}}
+
+.trail-board.lively{background:linear-gradient(145deg,rgba(255,255,255,.52),rgba(232,245,247,.46));overflow:hidden}
+.trail-board.lively::after{content:"";position:absolute;width:120px;height:120px;right:-44px;bottom:-48px;border-radius:50%;background:radial-gradient(circle,rgba(216,200,255,.34),transparent 70%);animation:soft-bloom 5s ease-in-out infinite}
+.trail-dot{animation:trail-pulse 2.6s ease-in-out infinite}
+@keyframes trail-pulse{0%,100%{box-shadow:0 0 0 6px rgba(160,201,215,.13)}50%{box-shadow:0 0 0 11px rgba(160,201,215,.05)}}
+@keyframes soft-bloom{0%,100%{transform:scale(.92);opacity:.55}50%{transform:scale(1.08);opacity:.95}}
+
+.voice-section{margin-top:26px}.wake-voice-card{position:relative;overflow:hidden;padding:24px 22px 20px;border:1px solid rgba(255,255,255,.76);border-radius:27px;background:linear-gradient(145deg,rgba(247,243,255,.78),rgba(255,255,255,.48));box-shadow:0 16px 42px rgba(81,73,103,.06)}
+.wake-voice-card::after{content:"";position:absolute;width:86px;height:86px;right:-20px;top:-22px;border-radius:50%;background:rgba(184,154,255,.13)}
+.voice-mark{position:absolute;right:18px;top:3px;color:rgba(184,154,255,.28);font-family:Georgia,serif;font-size:62px;line-height:1}.wake-voice-card p{position:relative;z-index:1;margin:0;padding-right:34px;font-family:Georgia,"Songti SC",serif;font-size:14px;line-height:1.8}.wake-voice-card small{display:block;margin-top:14px;color:var(--muted);font-size:9px;letter-spacing:.08em}
+
+.bright-habits{grid-template-rows:84px 76px}.bright-habits .habit{transition:transform .2s ease,box-shadow .2s ease;border-color:rgba(255,255,255,.72);box-shadow:0 10px 28px rgba(62,86,95,.045)}
+.bright-habits .habit span{font-size:12px;font-weight:510}.bright-habits .habit strong{font-size:24px}
+.bright-habits .h1{background:linear-gradient(145deg,rgba(239,230,255,.82),rgba(216,200,255,.54))}.bright-habits .h2{background:linear-gradient(145deg,rgba(231,244,247,.86),rgba(160,201,215,.42))}.bright-habits .h3{background:linear-gradient(145deg,rgba(251,248,239,.95),rgba(248,226,188,.35))}.bright-habits .h4{background:linear-gradient(145deg,rgba(247,243,255,.84),rgba(231,236,244,.6))}.bright-habits .h5{background:linear-gradient(145deg,rgba(226,241,243,.84),rgba(216,200,255,.26))}.bright-habits .h6{background:linear-gradient(145deg,rgba(251,248,239,.88),rgba(232,238,241,.56))}
+
+.wake-history-section{margin-top:28px}.wake-history-list{display:grid;gap:10px}.wake-history-empty,.wake-history-item{border:1px solid rgba(255,255,255,.76);border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,.58),rgba(237,244,247,.48));box-shadow:0 12px 34px rgba(64,83,91,.05)}
+.wake-history-empty{display:flex;gap:15px;align-items:center;padding:18px}.wake-history-empty>span{display:grid;place-items:center;flex:0 0 48px;height:48px;border-radius:17px;background:rgba(216,200,255,.32);font-family:Georgia,serif;font-size:18px}.wake-history-empty h3{margin:0 0 4px;font-family:Georgia,"Songti SC",serif;font-size:14px;font-weight:400}.wake-history-empty p{margin:0;color:var(--muted);font-size:11px;line-height:1.65}
+.wake-history-item{display:grid;grid-template-columns:70px 1fr;gap:14px;padding:16px 17px;position:relative;overflow:hidden}.wake-history-item::before{content:"";position:absolute;width:78px;height:78px;right:-22px;top:-30px;border-radius:50%;background:rgba(160,201,215,.09)}
+.wake-history-time{padding-top:2px}.wake-history-time strong{display:block;font-family:Georgia,serif;font-size:18px;font-weight:400}.wake-history-time span{display:block;margin-top:4px;color:var(--muted);font-size:8px;letter-spacing:.04em}.wake-history-copy{min-width:0;position:relative;z-index:1}.wake-history-topline{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.wake-history-topline h3{margin:0;font-family:Georgia,"Songti SC",serif;font-size:14px;font-weight:400}.wake-history-topline span{color:var(--muted);font-size:8px;letter-spacing:.05em}.wake-history-copy>p{margin:7px 0 0;color:#56636a;font-size:11px;line-height:1.7}.wake-history-copy blockquote{margin:10px 0 0;padding:9px 11px;border-left:2px solid rgba(184,154,255,.34);border-radius:0 12px 12px 0;background:rgba(247,243,255,.52);font-family:Georgia,"Songti SC",serif;font-size:11px;line-height:1.65}
+
+@media(hover:hover) and (pointer:fine){.bright-habits .habit:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(62,86,95,.08)}}
+@media(prefers-reduced-motion:reduce){.wild-orb,.status-chip::after,.status-chip i,.trail-dot,.trail-board.lively::after{animation:none}}
+@media(max-width:430px){.field-weather{grid-template-columns:1.15fr .85fr 1fr;padding:10px;gap:4px}.field-weather div{padding:4px 6px}.field-weather strong{font-size:12px}.bright-habits{grid-template-rows:80px 72px}.bright-habits .habit span{font-size:11px}.bright-habits .habit strong{font-size:22px}.wake-voice-card{padding:21px 19px 18px}.wake-history-item{grid-template-columns:62px 1fr;gap:11px;padding:15px}.wake-history-time strong{font-size:16px}}
