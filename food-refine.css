@@ -44,6 +44,8 @@
 .feed-history-main p{margin:4px 0 0;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(59,72,76,.61)}
 .feed-history-main small{display:none}
 
+.feed-row-link{color:inherit;text-decoration:none;transition:transform .18s ease,background .18s ease}.feed-row-link:active{transform:scale(.992)}.receipt-badge{display:inline-flex;align-items:center;margin-top:6px;padding:4px 7px;border-radius:999px;font-size:9.5px;line-height:1}.receipt-badge.is-new{background:rgba(225,191,194,.25);color:rgba(118,75,79,.78)}.receipt-badge.is-read{background:rgba(222,232,225,.7);color:rgba(65,84,73,.66)}
+
 @media(max-width:420px){
   .today-feed-card{grid-template-columns:minmax(0,59%) minmax(0,41%);min-height:228px}
   .feed-copy{padding:23px 7px 22px 22px}.feed-visual{min-height:228px}

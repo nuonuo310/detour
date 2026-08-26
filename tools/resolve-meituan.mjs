@@ -36,6 +36,62 @@ function findDeepLink(text) {
   return null;
 }
 
+function parseDeepLink(value) {
+  try {
+    const u = new URL(value);
+    return {
+      scheme: u.protocol.replace(':', ''),
+      host: u.host,
+      path: u.pathname,
+      did: u.searchParams.get('did'),
+      poiid: u.searchParams.get('poiid'),
+      poiIdEncrypt: u.searchParams.get('poiIdEncrypt')
+    };
+  } catch {
+    return {};
+  }
+}
+
+function decodeHtml(value) {
+  return String(value || '')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
+
+function firstMeta(html, keys) {
+  for (const key of keys) {
+    const patterns = [
+      new RegExp(`<meta[^>]+(?:property|name)=["']${key}["'][^>]+content=["']([^"']+)["']`, 'i'),
+      new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${key}["']`, 'i')
+    ];
+    for (const pattern of patterns) {
+      const match = html.match(pattern);
+      if (match?.[1]) return decodeHtml(match[1]);
+    }
+  }
+  return null;
+}
+
+function extractImageCandidates(html) {
+  const found = new Set();
+  const add = value => {
+    if (!value) return;
+    const decoded = decodeHtml(value).replace(/\\u002F/g, '/').replace(/\\\//g, '/');
+    if (/^https?:\/\//i.test(decoded) && /\.(?:png|jpe?g|webp)(?:\?|$)/i.test(decoded)) found.add(decoded);
+  };
+
+  add(firstMeta(html, ['og:image', 'twitter:image']));
+
+  for (const match of html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)) add(match[1]);
+  for (const match of html.matchAll(/https?:\\?\/\\?\/[^\s"'<>]+?\.(?:png|jpe?g|webp)(?:\?[^\s"'<>]*)?/gi)) add(match[0]);
+  for (const match of html.matchAll(/(?:imageUrl|image_url|imgUrl|img_url|picUrl|pic_url|coverUrl|cover_url)["']?\s*[:=]\s*["']([^"']+)["']/gi)) add(match[1]);
+
+  return [...found].slice(0, 20);
+}
+
 let response;
 try {
   response = await fetch(shareUrl, {
@@ -50,25 +106,33 @@ try {
 }
 
 const finalUrl = response.url;
-let deepLink = decodeDeepLinkFromUrl(finalUrl);
 let body = '';
+try {
+  body = await response.text();
+} catch {}
 
-if (!deepLink) {
-  try {
-    body = await response.text();
-  } catch {}
-  deepLink = findDeepLink(body);
-}
-
+let deepLink = decodeDeepLinkFromUrl(finalUrl) || findDeepLink(body);
 if (!deepLink) {
   console.error(`could not resolve imeituan deep link; final URL: ${finalUrl}`);
   process.exit(1);
 }
 
+const deepLinkData = parseDeepLink(deepLink);
+const metadata = {
+  title: firstMeta(body, ['og:title', 'twitter:title']),
+  description: firstMeta(body, ['og:description', 'description']),
+  image: firstMeta(body, ['og:image', 'twitter:image'])
+};
+const imageCandidates = extractImageCandidates(body);
+
 const out = {
   shareUrl,
   finalUrl,
   deepLink,
+  deal: deepLinkData,
+  metadata,
+  imageCandidates,
+  bodyBytes: Buffer.byteLength(body || '', 'utf8'),
   resolvedAt: new Date().toISOString()
 };
 
