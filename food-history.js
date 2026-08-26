@@ -6,7 +6,7 @@
   const sameDay=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
   const sameMonth=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth();
   const isTest=r=>/联调|测试/.test([r.item,r.shop,r.reason,r.note].filter(Boolean).join(' '));
-  const esc=v=>String(v??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+  const esc=v=>String(v??'').replace(/[&<>'\"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[ch]));
   const mostCommon=values=>{const m=new Map();values.filter(Boolean).forEach(v=>m.set(v,(m.get(v)||0)+1));return [...m].sort((a,b)=>b[1]-a[1])[0]?.[0]||'—'};
   const timeBucket=v=>{const h=parse(v).getHours();return h<6?'凌晨':h<11?'上午':h<14?'中午':h<18?'下午':h<22?'晚上':'深夜'};
   const specText=r=>Array.isArray(r.specs)&&r.specs.length?r.specs.join(' · '):'';
@@ -31,22 +31,28 @@
     const visual=card.querySelector('.feed-visual');if(visual)visual.innerHTML=`${visualMarkup(record)}<span>${time(record.at)}</span>`;
     const mini=card.querySelector('.mini-label');if(mini)mini.textContent=label;
     const title=card.querySelector('h2');if(title)title.textContent=record.item||'一份小投喂';
-    const copy=card.querySelector('.feed-copy p');if(copy)copy.innerHTML=`<span class="feed-shop">${esc(record.shop||'')}</span>${specText(record)?`<span class="feed-specs">${esc(specText(record))}</span>`:''}${record.reason?`<span class="feed-reason">${esc(record.reason)}</span>`:''}${receipt?`<span class="feed-receipt-hint ${receipt.readByShenshu?'is-read':'is-new'}">${!receipt.readByShenshu?pulseDot():''}${receipt.readByShenshu?'已收到 · 1 条回应':'新回执 · 1 条回应'}</span>`:''}`;
+    const copy=card.querySelector('.feed-copy p');if(copy)copy.innerHTML=`<span class="feed-shop">${esc(record.shop||'')}</span>${specText(record)?`<span class="feed-specs">${esc(specText(record))}</span>`:''}${record.reason?`<span class="feed-reason">${esc(record.reason)}</span>`:''}`;
+    let hint=card.querySelector('.feed-receipt-corner');
+    if(receipt){
+      if(!hint){hint=document.createElement('span');hint.className='feed-receipt-corner';card.appendChild(hint);}
+      hint.className=`feed-receipt-corner ${receipt.readByShenshu?'is-read':'is-new'}`;
+      hint.innerHTML=`${!receipt.readByShenshu?pulseDot():''}<span>${receipt.readByShenshu?'已收到 · 1 条回应':'新回执 · 1 条回应'}</span>`;
+    }else if(hint){hint.remove();}
     card.dataset.detailHref=`food-detail.html?id=${encodeURIComponent(record.id)}`;
   }
 
-  function renderDailySwitcher(today,card,serverReceipts){
+  function renderDailySwitcher(group,card,serverReceipts,isToday){
     document.querySelector('.today-feed-switcher')?.remove();
-    if(today.length<=1)return;
+    if(group.length<=1)return;
     const switcher=document.createElement('div');
     switcher.className='today-feed-switcher';
-    switcher.innerHTML=`<span class="switcher-label">今天还有 ${today.length} 份</span><div class="switcher-items">${today.map((r,i)=>`<button type="button" class="feed-switch ${i===0?'is-active':''}" data-index="${i}"><i></i><span>${esc(r.item||r.category||'投喂')}</span><small>${time(r.at)}</small></button>`).join('')}</div>`;
+    switcher.innerHTML=`<span class="switcher-label">${isToday?'今天':'这一天'}共 ${group.length} 份</span><div class="switcher-items">${group.map((r,i)=>`<button type="button" class="feed-switch ${i===0?'is-active':''}" data-index="${i}"><i></i><span>${esc(r.item||r.category||'投喂')}</span><small>${time(r.at)}</small></button>`).join('')}</div>`;
     card.insertAdjacentElement('afterend',switcher);
     switcher.addEventListener('click',e=>{
       const btn=e.target.closest('.feed-switch');if(!btn)return;
-      const index=Number(btn.dataset.index);const record=today[index];if(!record)return;
+      const index=Number(btn.dataset.index);const record=group[index];if(!record)return;
       switcher.querySelectorAll('.feed-switch').forEach(x=>x.classList.toggle('is-active',x===btn));
-      renderHero(record,card,serverReceipts,`今日投喂 · ${index+1}/${today.length}`);
+      renderHero(record,card,serverReceipts,`${isToday?'今日投喂':'最近投喂'} · ${index+1}/${group.length}`);
     });
   }
 
@@ -60,8 +66,10 @@
     const card=document.querySelector('.today-feed-card');
     const heroRecord=today[0]||visible[0];
     if(heroRecord&&card){
-      renderHero(heroRecord,card,serverReceipts,today.length?`今日投喂${today.length>1?` · 1/${today.length}`:''}`:'最近投喂');
-      renderDailySwitcher(today,card,serverReceipts);
+      const isToday=today.length>0;
+      const heroGroup=isToday?today:visible.filter(r=>sameDay(parse(r.at),parse(heroRecord.at)));
+      renderHero(heroRecord,card,serverReceipts,`${isToday?'今日投喂':'最近投喂'}${heroGroup.length>1?` · 1/${heroGroup.length}`:''}`);
+      renderDailySwitcher(heroGroup,card,serverReceipts,isToday);
       card.addEventListener('click',e=>{if(e.target.closest('button,a,input,textarea'))return;if(card.dataset.detailHref)location.href=card.dataset.detailHref;});
     }
     const stats=document.querySelectorAll('.feed-stats strong');[today.length,month.length,visible.length].forEach((v,i)=>{if(stats[i])stats[i].textContent=pad(v)});
