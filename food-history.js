@@ -24,6 +24,32 @@
     return local||(serverReceipts||[]).find(r=>r.foodId===record.id)||null;
   };
   const receiptBadge=receipt=>receipt?`<span class="receipt-badge ${receipt.readByShenshu?'is-read':'is-new'}">${receipt.readByShenshu?'已收到':'新回执'}</span>`:'';
+
+  function renderHero(record,card,serverReceipts,label){
+    if(!record||!card)return;
+    const receipt=receiptFor(record,serverReceipts);
+    const visual=card.querySelector('.feed-visual');if(visual)visual.innerHTML=`${visualMarkup(record)}<span>${time(record.at)}</span>`;
+    const mini=card.querySelector('.mini-label');if(mini)mini.textContent=label;
+    const title=card.querySelector('h2');if(title)title.textContent=record.item||'一份小投喂';
+    const copy=card.querySelector('.feed-copy p');if(copy)copy.innerHTML=`<span class="feed-shop">${esc(record.shop||'')}</span>${specText(record)?`<span class="feed-specs">${esc(specText(record))}</span>`:''}${record.reason?`<span class="feed-reason">${esc(record.reason)}</span>`:''}${receipt?`<span class="feed-receipt-hint ${receipt.readByShenshu?'is-read':'is-new'}">${!receipt.readByShenshu?pulseDot():''}${receipt.readByShenshu?'已收到 · 1 条回应':'新回执 · 1 条回应'}</span>`:''}`;
+    card.dataset.detailHref=`food-detail.html?id=${encodeURIComponent(record.id)}`;
+  }
+
+  function renderDailySwitcher(today,card,serverReceipts){
+    document.querySelector('.today-feed-switcher')?.remove();
+    if(today.length<=1)return;
+    const switcher=document.createElement('div');
+    switcher.className='today-feed-switcher';
+    switcher.innerHTML=`<span class="switcher-label">今天还有 ${today.length} 份</span><div class="switcher-items">${today.map((r,i)=>`<button type="button" class="feed-switch ${i===0?'is-active':''}" data-index="${i}"><i></i><span>${esc(r.item||r.category||'投喂')}</span><small>${time(r.at)}</small></button>`).join('')}</div>`;
+    card.insertAdjacentElement('afterend',switcher);
+    switcher.addEventListener('click',e=>{
+      const btn=e.target.closest('.feed-switch');if(!btn)return;
+      const index=Number(btn.dataset.index);const record=today[index];if(!record)return;
+      switcher.querySelectorAll('.feed-switch').forEach(x=>x.classList.toggle('is-active',x===btn));
+      renderHero(record,card,serverReceipts,`今日投喂 · ${index+1}/${today.length}`);
+    });
+  }
+
   async function render(){
     const [data,receiptData]=await Promise.all([DetourData.load('food'),DetourData.load('food-receipts')]);
     const serverReceipts=receiptData?.receipts||[];
@@ -31,11 +57,12 @@
     const visible=records.filter(r=>!isTest(r)),now=new Date();
     const today=visible.filter(r=>{const d=parse(r.at);return !Number.isNaN(d.valueOf())&&sameDay(d,now)});
     const month=visible.filter(r=>{const d=parse(r.at);return !Number.isNaN(d.valueOf())&&sameMonth(d,now)});
-    const latest=today[0],card=document.querySelector('.today-feed-card');
-    if(card&&latest){
-      const visual=card.querySelector('.feed-visual');if(visual)visual.innerHTML=`${visualMarkup(latest)}<span>${time(latest.at)}</span>`;
-      const title=card.querySelector('h2');if(title)title.textContent=latest.item||'一份小投喂';
-      const copy=card.querySelector('.feed-copy p');if(copy)copy.innerHTML=`<span class="feed-shop">${esc(latest.shop||'')}</span>${specText(latest)?`<span class="feed-specs">${esc(specText(latest))}</span>`:''}${latest.reason?`<span class="feed-reason">${esc(latest.reason)}</span>`:''}`;
+    const card=document.querySelector('.today-feed-card');
+    const heroRecord=today[0]||visible[0];
+    if(heroRecord&&card){
+      renderHero(heroRecord,card,serverReceipts,today.length?`今日投喂${today.length>1?` · 1/${today.length}`:''}`:'最近投喂');
+      renderDailySwitcher(today,card,serverReceipts);
+      card.addEventListener('click',e=>{if(e.target.closest('button,a,input,textarea'))return;if(card.dataset.detailHref)location.href=card.dataset.detailHref;});
     }
     const stats=document.querySelectorAll('.feed-stats strong');[today.length,month.length,visible.length].forEach((v,i)=>{if(stats[i])stats[i].textContent=pad(v)});
     document.querySelectorAll('.category-grid>div').forEach(el=>{const label=el.dataset.kind,val=el.querySelector('strong'),icon=el.querySelector('.category-icon');if(val)val.textContent=visible.filter(r=>r.category===label).length;if(icon)icon.innerHTML=objectMarkup(categoryClass(label),'category-object');el.classList.toggle('has-feed',visible.some(r=>r.category===label));});
