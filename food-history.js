@@ -1,112 +1,39 @@
 (() => {
   if (!document.body.classList.contains('food-page') || typeof DetourData === 'undefined') return;
-
-  const pad = n => String(n).padStart(2, '0');
-  const time = value => {
-    const d = new Date(value);
-    return Number.isNaN(d.valueOf()) ? '—' : `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const pad=n=>String(n).padStart(2,'0');
+  const parse=v=>new Date(v);
+  const time=v=>{const d=parse(v);return Number.isNaN(d.valueOf())?'—':`${pad(d.getHours())}:${pad(d.getMinutes())}`};
+  const date=v=>{const d=parse(v);return Number.isNaN(d.valueOf())?'—':`${d.getMonth()+1}.${pad(d.getDate())}`};
+  const sameDay=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
+  const sameMonth=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth();
+  const isTest=r=>/联调|测试/.test([r.item,r.shop,r.reason,r.note].filter(Boolean).join(' '));
+  const esc=v=>String(v??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+  const mostCommon=values=>{const m=new Map();values.filter(Boolean).forEach(v=>m.set(v,(m.get(v)||0)+1));return [...m].sort((a,b)=>b[1]-a[1])[0]?.[0]||'—'};
+  const timeBucket=v=>{const h=parse(v).getHours();return h<6?'凌晨':h<11?'上午':h<14?'中午':h<18?'下午':h<22?'晚上':'深夜'};
+  const specText=r=>Array.isArray(r.specs)&&r.specs.length?r.specs.join(' · '):'';
+  const categoryClass=c=>({'奶茶':'drink','外卖':'meal','零食':'snack','礼物':'gift','日用品':'daily','宠物用品':'pet'}[c]||'other');
+  const visualMarkup=r=>{
+    if(r?.visual?.type==='image'&&r.visual.src)return `<img class="feed-product-image" src="${esc(r.visual.src)}" alt="${esc(r.item||'投喂')}" />`;
+    const preset=r?.visual?.preset||categoryClass(r?.category);
+    return `<div class="product-object product-${esc(preset)}" aria-hidden="true"><i></i><b></b><em></em><span></span></div>`;
   };
-  const date = value => {
-    const d = new Date(value);
-    return Number.isNaN(d.valueOf()) ? '—' : `${d.getMonth() + 1}.${pad(d.getDate())}`;
-  };
-  const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-  const sameMonth = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
-  const mostCommon = values => {
-    const counts = new Map();
-    for (const value of values.filter(Boolean)) counts.set(value, (counts.get(value) || 0) + 1);
-    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
-  };
-  const timeBucket = value => {
-    const d = new Date(value);
-    if (Number.isNaN(d.valueOf())) return null;
-    const h = d.getHours();
-    if (h < 6) return '凌晨';
-    if (h < 11) return '上午';
-    if (h < 14) return '中午';
-    if (h < 18) return '下午';
-    if (h < 22) return '晚上';
-    return '深夜';
-  };
-  const isTestRecord = record => {
-    const text = [record.item, record.shop, record.reason, record.note].filter(Boolean).join(' ');
-    return /联调|测试/.test(text);
-  };
-
-  async function render() {
-    const data = await DetourData.load('food');
-    const records = [...(data?.records || [])].sort((a, b) => new Date(b.at) - new Date(a.at));
-    const visibleRecords = records.filter(record => !isTestRecord(record));
-    const now = new Date();
-    const todayRecords = visibleRecords.filter(record => {
-      const d = new Date(record.at);
-      return !Number.isNaN(d.valueOf()) && sameDay(d, now);
-    });
-    const monthRecords = visibleRecords.filter(record => {
-      const d = new Date(record.at);
-      return !Number.isNaN(d.valueOf()) && sameMonth(d, now);
-    });
-
-    const todayCard = document.querySelector('.today-feed-card');
-    const latestToday = todayRecords[0];
-    if (todayCard && latestToday) {
-      const title = todayCard.querySelector('h2');
-      const copy = todayCard.querySelector('.feed-copy p');
-      const visual = todayCard.querySelector('.feed-visual span');
-      if (visual) visual.textContent = time(latestToday.at);
-      if (title) title.textContent = latestToday.item || '一份小投喂';
-      if (copy) copy.textContent = [latestToday.shop, latestToday.reason].filter(Boolean).join(' · ') || '今天想到你，所以留下一份投喂。';
+  async function render(){
+    const data=await DetourData.load('food');
+    const records=[...(data?.records||[])].sort((a,b)=>parse(b.at)-parse(a.at));
+    const visible=records.filter(r=>!isTest(r)); const now=new Date();
+    const today=visible.filter(r=>{const d=parse(r.at);return !Number.isNaN(d.valueOf())&&sameDay(d,now)});
+    const month=visible.filter(r=>{const d=parse(r.at);return !Number.isNaN(d.valueOf())&&sameMonth(d,now)});
+    const latest=today[0]; const card=document.querySelector('.today-feed-card');
+    if(card&&latest){
+      const visual=card.querySelector('.feed-visual'); if(visual)visual.innerHTML=`${visualMarkup(latest)}<span>${time(latest.at)}</span>`;
+      const title=card.querySelector('h2');if(title)title.textContent=latest.item||'一份小投喂';
+      const copy=card.querySelector('.feed-copy p');if(copy)copy.innerHTML=`<span class="feed-shop">${esc(latest.shop||'')}</span>${specText(latest)?`<span class="feed-specs">${esc(specText(latest))}</span>`:''}`;
     }
-
-    const statValues = document.querySelectorAll('.feed-stats strong');
-    if (statValues[0]) statValues[0].textContent = pad(todayRecords.length);
-    if (statValues[1]) statValues[1].textContent = pad(monthRecords.length);
-    if (statValues[2]) statValues[2].textContent = pad(visibleRecords.length);
-
-    document.querySelectorAll('.category-grid > div').forEach(item => {
-      const label = item.querySelector('span')?.textContent?.trim();
-      const value = item.querySelector('strong');
-      if (!label || !value) return;
-      value.textContent = String(visibleRecords.filter(record => record.category === label).length);
-    });
-
-    const recent = document.querySelector('.recent-feed');
-    const latest = visibleRecords[0];
-    if (recent && latest) {
-      const oldRow = recent.querySelector('.feed-empty-row');
-      if (oldRow) {
-        oldRow.outerHTML = `
-          <article class="feed-empty-row">
-            <span class="feed-time">${time(latest.at)}</span>
-            <div><h3>${escapeHtml(latest.item || '一份小投喂')}</h3><p>${escapeHtml([latest.shop, latest.reason].filter(Boolean).join(' · ') || '这次没有留下更多说明。')}</p></div>
-          </article>`;
-      }
-    }
-
-    const list = document.querySelector('.feed-history-list');
-    if (list && records.length) {
-      list.innerHTML = records.map(record => `
-        <article class="feed-history-row">
-          <div class="feed-history-meta"><span>${date(record.at)}</span><time>${time(record.at)}</time></div>
-          <div class="feed-history-main">
-            <div class="feed-history-title"><h3>${escapeHtml(record.item || '一份小投喂')}</h3><span>${escapeHtml(record.category || '投喂')}</span></div>
-            <p>${escapeHtml([record.shop, record.reason].filter(Boolean).join(' · ') || '这次没有留下更多说明。')}</p>
-            ${record.note ? `<small>${escapeHtml(record.note)}</small>` : ''}
-          </div>
-        </article>`).join('');
-    }
-
-    const category = document.querySelector('[data-favorite="category"]');
-    const shop = document.querySelector('[data-favorite="shop"]');
-    const when = document.querySelector('[data-favorite="time"]');
-    if (category) category.textContent = mostCommon(visibleRecords.map(r => r.category));
-    if (shop) shop.textContent = mostCommon(visibleRecords.map(r => r.shop));
-    if (when) when.textContent = mostCommon(visibleRecords.map(r => timeBucket(r.at)));
+    const stats=document.querySelectorAll('.feed-stats strong');[today.length,month.length,visible.length].forEach((v,i)=>{if(stats[i])stats[i].textContent=pad(v)});
+    document.querySelectorAll('.category-grid>div').forEach(el=>{const label=el.dataset.kind;const val=el.querySelector('strong');if(val)val.textContent=visible.filter(r=>r.category===label).length;el.classList.toggle('has-feed',visible.some(r=>r.category===label));});
+    const recent=document.querySelector('.recent-feed .feed-empty-row');const last=visible[0];if(recent&&last)recent.outerHTML=`<article class="feed-empty-row"><span class="feed-time">${time(last.at)}</span><div><h3>${esc(last.item||'一份小投喂')}</h3><p>${esc([last.shop,specText(last),last.reason].filter(Boolean).join(' · '))}</p></div></article>`;
+    const list=document.querySelector('.feed-history-list');if(list&&visible.length)list.innerHTML=visible.map(r=>`<article class="feed-history-row"><div class="feed-history-meta"><span>${date(r.at)}</span><time>${time(r.at)}</time></div><div class="feed-history-main"><div class="feed-history-title"><h3>${esc(r.item||'一份小投喂')}</h3><span>${esc(r.category||'投喂')}</span></div><p>${esc([r.shop,specText(r),r.reason].filter(Boolean).join(' · '))}</p>${r.note?`<small>${esc(r.note)}</small>`:''}</div></article>`).join('');
+    const cat=document.querySelector('[data-favorite="category"]'),shop=document.querySelector('[data-favorite="shop"]'),when=document.querySelector('[data-favorite="time"]');if(cat)cat.textContent=mostCommon(visible.map(r=>r.category));if(shop)shop.textContent=mostCommon(visible.map(r=>r.shop));if(when)when.textContent=mostCommon(visible.map(r=>timeBucket(r.at)));
   }
-
-  function escapeHtml(value) {
-    return String(value).replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
-  }
-
   render();
 })();
