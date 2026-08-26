@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-08-26T15:45:00+08:00",
+  "updatedAt": "2026-08-26T16:55:00+08:00",
   "records": [
     {
       "at": "2026-08-26T14:41:17.193+08:00",
@@ -10,7 +10,11 @@
       "reason": "下午茶时间，第一张正式投喂牌",
       "note": "",
       "specs": ["中杯", "标准冰", "三分糖"],
-      "visual": {"type": "preset", "preset": "guava-milk-tea"},
+      "visual": {
+        "type": "image",
+        "src": "https://www.alittle-tea.com/upload/news_list_pic/cnL_news_26C02_sbbpjevwkh.jpg",
+        "fallback": "guava-milk-tea"
+      },
       "id": "food-20260826144117-639bc72087"
     },
     {
