@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-26T13:40:00+08:00",
+  "candidates": [
+    {
+      "id": "1dian-yantang-guava-milk-tea-medium",
+      "kind": "奶茶",
+      "brand": "1点点",
+      "store": "1点点（燕塘店）",
+      "storeAddress": "广州市天河区兴华街道燕岭路120号112铺",
+      "area": "力达广场 / 燕塘",
+      "name": "芭乐奶绿中杯",
+      "displayName": "【芭乐升级有果肉】芭乐奶绿中杯",
+      "shareUrl": "http://dpurl.cn/zIWHXGmz",
+      "meituan": {
+        "did": "1618314686",
+        "poiId": "1713162684",
+        "poiIdEncrypt": "qB4r177f79a40fbe9ee568a737925571640ee8e63d7690a06106e1ce2a76ee607d88922f49ead8abb2b43367222410ea3a6bfe07vxu5",
+        "deepLink": "imeituan://www.meituan.com/food/deal?did=1618314686&poiid=1713162684&poiIdEncrypt=qB4r177f79a40fbe9ee568a737925571640ee8e63d7690a06106e1ce2a76ee607d88922f49ead8abb2b43367222410ea3a6bfe07vxu5"
+      },
+      "status": "verified",
+      "verifiedAt": "2026-08-26",
+      "notes": "已实测：Notification 邮件携带 dpurl.cn 短链，经 iPhone 快捷指令触发 GitHub 解析后，可自动打开美团燕塘店对应芭乐奶绿商品页。"
+    }
+  ]
+}
