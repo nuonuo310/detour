@@ -17,6 +17,8 @@
     const preset=r?.visual?.preset||r?.visual?.fallback||categoryClass(r?.category);
     return objectMarkup(preset);
   };
+  const thumbMarkup=r=>`<div class="record-thumb">${visualMarkup(r)}</div>`;
+  const pulseDot=()=>'<i class="record-pulse" aria-hidden="true"></i>';
   async function render(){
     const data=await DetourData.load('food');
     const records=[...(data?.records||[])].sort((a,b)=>parse(b.at)-parse(a.at));
@@ -27,12 +29,14 @@
     if(card&&latest){
       const visual=card.querySelector('.feed-visual');if(visual)visual.innerHTML=`${visualMarkup(latest)}<span>${time(latest.at)}</span>`;
       const title=card.querySelector('h2');if(title)title.textContent=latest.item||'一份小投喂';
-      const copy=card.querySelector('.feed-copy p');if(copy)copy.innerHTML=`<span class="feed-shop">${esc(latest.shop||'')}</span>${specText(latest)?`<span class="feed-specs">${esc(specText(latest))}</span>`:''}`;
+      const copy=card.querySelector('.feed-copy p');if(copy)copy.innerHTML=`<span class="feed-shop">${esc(latest.shop||'')}</span>${specText(latest)?`<span class="feed-specs">${esc(specText(latest))}</span>`:''}${latest.reason?`<span class="feed-reason">${esc(latest.reason)}</span>`:''}`;
     }
     const stats=document.querySelectorAll('.feed-stats strong');[today.length,month.length,visible.length].forEach((v,i)=>{if(stats[i])stats[i].textContent=pad(v)});
     document.querySelectorAll('.category-grid>div').forEach(el=>{const label=el.dataset.kind,val=el.querySelector('strong'),icon=el.querySelector('.category-icon');if(val)val.textContent=visible.filter(r=>r.category===label).length;if(icon)icon.innerHTML=objectMarkup(categoryClass(label),'category-object');el.classList.toggle('has-feed',visible.some(r=>r.category===label));});
-    const recent=document.querySelector('.recent-feed .feed-empty-row'),last=visible[0];if(recent&&last)recent.outerHTML=`<article class="feed-empty-row"><span class="feed-time">${time(last.at)}</span><div><h3>${esc(last.item||'一份小投喂')}</h3><p>${esc([last.shop,specText(last),last.reason].filter(Boolean).join(' · '))}</p></div></article>`;
-    const list=document.querySelector('.feed-history-list');if(list&&visible.length)list.innerHTML=visible.map(r=>`<article class="feed-history-row"><div class="feed-history-meta"><span>${date(r.at)}</span><time>${time(r.at)}</time></div><div class="feed-history-main"><div class="feed-history-title"><h3>${esc(r.item||'一份小投喂')}</h3><span>${esc(r.category||'投喂')}</span></div><p>${esc([r.shop,specText(r),r.reason].filter(Boolean).join(' · '))}</p>${r.note?`<small>${esc(r.note)}</small>`:''}</div></article>`).join('');
+    const recent=document.querySelector('.recent-feed .feed-empty-row'),last=visible[0];
+    if(recent&&last)recent.outerHTML=`<article class="feed-empty-row"><div class="recent-time">${time(last.at)}${pulseDot()}</div>${thumbMarkup(last)}<div class="recent-main"><h3>${esc(last.item||'一份小投喂')}</h3><p>${esc([last.shop,specText(last)].filter(Boolean).join(' · '))}</p></div><span class="recent-tag">${esc(last.category||'投喂')}</span><b class="row-arrow">›</b></article>`;
+    const list=document.querySelector('.feed-history-list');
+    if(list&&visible.length)list.innerHTML=visible.map(r=>`<article class="feed-history-row"><div class="feed-history-meta"><span>${date(r.at)}</span><div><time>${time(r.at)}</time>${pulseDot()}</div></div>${thumbMarkup(r)}<div class="feed-history-main"><div class="feed-history-title"><h3>${esc(r.item||'一份小投喂')}</h3><span>${esc(r.category||'投喂')}</span></div><p>${esc([r.shop,specText(r)].filter(Boolean).join(' · '))}</p>${r.reason?`<small>${esc(r.reason)}</small>`:''}</div><b class="row-arrow">›</b></article>`).join('');
     const cat=document.querySelector('[data-favorite="category"]'),shop=document.querySelector('[data-favorite="shop"]'),when=document.querySelector('[data-favorite="time"]');if(cat)cat.textContent=mostCommon(visible.map(r=>r.category));if(shop)shop.textContent=mostCommon(visible.map(r=>r.shop));if(when)when.textContent=mostCommon(visible.map(r=>timeBucket(r.at)));
   }
   render();
