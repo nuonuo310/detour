@@ -1,5 +1,16 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-26T23:15:00+08:00",
-  "receipts": []
+  "updatedAt": "2026-08-26T17:03:44.898Z",
+  "receipts": [
+    {
+      "id": "receipt-1787760925111",
+      "foodId": "food-20260826144117-639bc72087",
+      "text": "沈工师辛苦了，亲亲😘",
+      "photo": null,
+      "createdAt": "2026-08-26T16:15:25.111Z",
+      "readByShenshu": false,
+      "readAt": null,
+      "source": "github-issue"
+    }
+  ]
 }
