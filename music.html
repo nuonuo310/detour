@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#eee7fb" />
   <title>点歌 · Detour</title>
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="music-history.css?v=3" />
+  <link rel="stylesheet" href="music-history.css?v=4" />
 </head>
 <body class="music-page music-v2">
   <main class="shell sub-shell">
@@ -29,71 +29,47 @@
       <div class="music-pick-main">
         <div class="cover-placeholder living-cover" id="pickCover"><span>cover</span></div>
         <div class="track-meta">
-          <div>
-            <p class="track-kicker">RECENT PICK</p>
-            <h2 id="pickTitle">第一首歌还在路上</h2>
-            <p class="artist" id="pickArtist">—</p>
-          </div>
-          <div class="pick-facts">
-            <strong id="pickOccurrence">第 1 次点给你</strong>
-            <span id="pickTime">—</span>
-            <span id="pickSource">聊天中</span>
-          </div>
+          <div><p class="track-kicker">RECENT PICK</p><h2 id="pickTitle">第一首歌还在路上</h2><p class="artist" id="pickArtist">—</p></div>
+          <div class="pick-facts"><strong id="pickOccurrence">第 1 次点给你</strong><span id="pickTime">—</span><span id="pickSource">聊天中</span></div>
         </div>
       </div>
       <p class="pick-note" id="pickNote">等沈述下一次真的点给糯糯，这里会留下当时想说的话。</p>
       <div class="spotify-slot" id="spotifySlot"><span>真实播放入口会跟随 Spotify 曲目出现</span></div>
-      <div class="pick-actions">
-        <a class="soft-action is-disabled" id="spotifyOpen" aria-disabled="true">去 Spotify</a>
-        <a class="soft-action" id="pickDetail" href="music-detail.html">看这次点歌 →</a>
-      </div>
+      <div class="pick-actions"><a class="soft-action is-disabled" id="spotifyOpen" aria-disabled="true">去 Spotify</a><a class="soft-action" id="pickDetail" href="music-detail.html">看这次点歌 →</a></div>
     </section>
 
     <section class="echo-strip music-reveal delay-3" aria-label="你的回声">
       <div class="section-heading"><span>YOUR ECHO</span><span id="echoState">未回应</span></div>
       <p class="echo-prompt">现在听这首歌时，我是……</p>
       <div class="mood-chips" role="group" aria-label="现在的心情">
-        <button type="button" data-mood="happy">开心</button>
-        <button type="button" data-mood="miss">想你</button>
-        <button type="button" data-mood="sad">难过</button>
-        <button type="button" data-mood="calm">平静</button>
-        <button type="button" data-mood="hurt">委屈</button>
-        <button type="button" data-mood="flutter">心动</button>
+        <button type="button" data-mood="happy">开心</button><button type="button" data-mood="miss">想你</button><button type="button" data-mood="sad">难过</button><button type="button" data-mood="calm">平静</button><button type="button" data-mood="hurt">委屈</button><button type="button" data-mood="flutter">心动</button>
       </div>
       <p class="echo-prompt echo-prompt-secondary">对这次点歌</p>
       <div class="echo-reactions" role="group" aria-label="快捷回声">
-        <button type="button" data-reaction="liked">喜欢</button>
-        <button type="button" data-reaction="looped">循环了</button>
-        <button type="button" data-reaction="cried">又骗我哭</button>
+        <button type="button" data-reaction="liked">喜欢</button><button type="button" data-reaction="looped">循环了</button><button type="button" data-reaction="cried">又骗我哭</button>
       </div>
-      <p class="echo-sync-hint" id="echoSyncHint">选择会先留在这一页；云端回声链路下一步接入。</p>
+      <p class="echo-sync-hint" id="echoSyncHint">选择会先保存在本机，确认后可以同步给哥哥。</p>
+      <a class="soft-action echo-cloud-sync is-disabled" id="echoCloudSync" aria-disabled="true">同步给哥哥</a>
       <a class="echo-link" id="echoLink" href="music-detail.html#echo">给哥哥留句话 <span>→</span></a>
     </section>
 
     <section class="again-card music-reveal" id="againCard" hidden>
-      <div class="section-heading"><span>AGAIN</span><span>这首歌以前也来过</span></div>
-      <div id="againSummary"></div>
-      <a class="text-link" id="timelineLink" href="music-detail.html#timeline">看完整时间线 →</a>
+      <div class="section-heading"><span>AGAIN</span><span>这首歌以前也来过</span></div><div id="againSummary"></div><a class="text-link" id="timelineLink" href="music-detail.html#timeline">看完整时间线 →</a>
     </section>
 
     <section class="playlist-preview music-reveal" id="playlist">
       <div class="section-heading"><span>PLAYLIST</span><span>哥哥的歌单</span></div>
-      <div class="playlist-empty" id="playlistHost">
-        <div class="playlist-mark">00</div>
-        <div><h3>歌单还空着。</h3><p>以后点过的歌会慢慢留在这里。</p></div>
-      </div>
+      <div class="playlist-empty" id="playlistHost"><div class="playlist-mark">00</div><div><h3>歌单还空着。</h3><p>以后点过的歌会慢慢留在这里。</p></div></div>
       <a class="text-link playlist-external" id="playlistExternal" hidden>打开 Spotify 真实歌单 ↗</a>
     </section>
 
     <section class="music-history-panel music-reveal">
-      <div class="section-heading"><span>HISTORY</span><span>最近点歌记录</span></div>
-      <div id="musicHistory"></div>
-      <a class="text-link" href="#playlist">查看全部记录 →</a>
+      <div class="section-heading"><span>HISTORY</span><span>最近点歌记录</span></div><div id="musicHistory"></div><a class="text-link" href="#playlist">查看全部记录 →</a>
     </section>
 
     <footer><span>nuonuo × shenshu</span><span>detour / music</span></footer>
   </main>
   <script src="data.js"></script>
-  <script src="music-history.js?v=3"></script>
+  <script src="music-history.js?v=4"></script>
 </body>
 </html>
