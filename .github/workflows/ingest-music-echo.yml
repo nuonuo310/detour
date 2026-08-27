@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   ingest:
-    if: startsWith(github.event.issue.title, '[music-echo]')
+    if: startsWith(github.event.issue.title, '[music-echo]') && github.actor == 'nuonuo310'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,13 +55,7 @@ jobs:
             else messages.push(entry);
           }
 
-          record.echo = {
-            ...echo,
-            moods,
-            reactions,
-            messages,
-            updatedAt: String(payload.respondedAt)
-          };
+          record.echo = { ...echo, moods, reactions, messages, updatedAt: String(payload.respondedAt) };
           if (!record.seenAt && payload.seenAt) record.seenAt = String(payload.seenAt);
           if (!record.listenedAt && payload.listenedAt) record.listenedAt = String(payload.listenedAt);
           data.updatedAt = new Date().toISOString();
