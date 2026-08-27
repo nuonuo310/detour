@@ -27,6 +27,7 @@ jobs:
           node-version: 20
 
       - name: Read and validate handoff payload
+        id: handoff
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
@@ -39,10 +40,8 @@ jobs:
           if (!String(payload.title || payload.song || '').trim()) throw new Error('music pick title is required');
           if (!String(payload.artist || '').trim()) throw new Error('music pick artist is required');
           if (!String(payload.url || payload.link || '').trim()) throw new Error('music pick Spotify URL is required');
-          if (payload.dryRun === true) {
-            fs.writeFileSync('/tmp/detour-music-pick-dry-run', '1');
-          }
           fs.writeFileSync('/tmp/detour-music-pick.json', JSON.stringify(payload));
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `dry_run=${payload.dryRun === true ? 'true' : 'false'}\n`);
           NODE
 
       - name: Normalize pick event
@@ -56,14 +55,14 @@ jobs:
         run: npm test
 
       - name: Append pick to music history
-        if: ${{ hashFiles('/tmp/detour-music-pick-dry-run') == '' }}
+        if: steps.handoff.outputs.dry_run != 'true'
         run: |
           EVENT=$(cat /tmp/detour-event.json)
           node tools/append-event.mjs --type music --event "$EVENT"
           npm run validate:data
 
       - name: Commit music pick
-        if: ${{ hashFiles('/tmp/detour-music-pick-dry-run') == '' }}
+        if: steps.handoff.outputs.dry_run != 'true'
         run: |
           if git diff --quiet -- data/music.json; then
             echo "No music data change to commit."
@@ -78,8 +77,9 @@ jobs:
       - name: Close handoff issue
         env:
           GH_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ steps.handoff.outputs.dry_run }}
         run: |
-          if [ -f /tmp/detour-music-pick-dry-run ]; then
+          if [ "$DRY_RUN" = "true" ]; then
             COMMENT="Music pick handoff validated successfully (dry run; no data written)."
           else
             COMMENT="Music pick synced to Detour dev data."
