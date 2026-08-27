@@ -1,12 +1,11 @@
 {
   "version": 2,
-  "updatedAt": "2026-08-27T06:05:00.000Z",
-  "playlist": {
-    "name": "地下情人版-沈述",
-    "spotifyPlaylistId": "3asNBMcFubEVoiWdbyWcke",
-    "spotifyUri": "spotify:playlist:3asNBMcFubEVoiWdbyWcke",
-    "url": "https://open.spotify.com/playlist/3asNBMcFubEVoiWdbyWcke?utm_source=openai&utm_medium=chatgpt",
-    "sourceOfTruth": "spotify"
+  "updatedAt": "2026-08-27T14:40:00.000Z",
+  "library": {
+    "name": "哥哥的歌单",
+    "sourceOfTruth": "detour",
+    "derivedFrom": "records",
+    "playbackProvider": "spotify-links"
   },
   "records": [
     {
