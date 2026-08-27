@@ -1,0 +1,81 @@
+name: Ingest Music Echo
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  ingest:
+    if: startsWith(github.event.issue.title, '[music-echo]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Merge echo into music pick
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const body = process.env.ISSUE_BODY || '';
+          const match = body.match(/<!--\s*detour-music-echo:([\s\S]*?)\s*-->/);
+          if (!match) throw new Error('missing detour music echo payload');
+          const payload = JSON.parse(decodeURIComponent(match[1].trim()));
+          if (!payload.pickId || !payload.respondedAt) throw new Error('invalid music echo payload');
+
+          const allowedMoods = new Set(['happy','miss','sad','calm','hurt','flutter']);
+          const allowedReactions = new Set(['liked','looped','cried']);
+          const moods = [...new Set(Array.isArray(payload.moods) ? payload.moods.filter(x => allowedMoods.has(x)).slice(0,2) : [])];
+          const reactions = [...new Set(Array.isArray(payload.reactions) ? payload.reactions.filter(x => allowedReactions.has(x)) : [])];
+          const text = String(payload.text || '').trim().slice(0,500);
+
+          const path = 'data/music.json';
+          const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+          data.records = Array.isArray(data.records) ? data.records : [];
+          const index = data.records.findIndex(r => r.id === payload.pickId);
+          if (index < 0) throw new Error(`music pick not found: ${payload.pickId}`);
+
+          const record = data.records[index];
+          const echo = record.echo && typeof record.echo === 'object' ? record.echo : {};
+          const messages = Array.isArray(echo.messages) ? echo.messages : [];
+          if (text) {
+            const messageId = String(payload.echoId || `echo-${Date.now()}`);
+            const entry = { id: messageId, text, at: String(payload.respondedAt) };
+            const existing = messages.findIndex(m => m && typeof m === 'object' && m.id === messageId);
+            if (existing >= 0) messages[existing] = entry;
+            else messages.push(entry);
+          }
+
+          record.echo = {
+            ...echo,
+            moods,
+            reactions,
+            messages,
+            updatedAt: String(payload.respondedAt)
+          };
+          if (!record.seenAt && payload.seenAt) record.seenAt = String(payload.seenAt);
+          if (!record.listenedAt && payload.listenedAt) record.listenedAt = String(payload.listenedAt);
+          data.updatedAt = new Date().toISOString();
+          fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+          NODE
+      - name: Commit music echo
+        run: |
+          git config user.name "detour-music-echo-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/music.json
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: ingest music echo #${{ github.event.issue.number }}"
+          git push origin dev
+      - name: Close handoff issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue close "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --comment "Music echo synced to Detour dev data."
