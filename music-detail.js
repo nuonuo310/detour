@@ -8,6 +8,9 @@
   const source=r=>r.sourceLabel||({auto_wake:'自动唤醒',chat:'聊天中',manual:'主动点歌'}[r.source]||'聊天中');
   const trig=r=>r.trigger?.label||r.triggerLabel||'';
   const row=(label,value)=>`<span>${label}</span><strong>${value||'—'}</strong>`;
+  const localKey = value => `detour:music-echo:${value || 'latest'}`;
+  const readLocal = value => { try { return JSON.parse(localStorage.getItem(localKey(value)) || '{}'); } catch { return {}; } };
+  const writeLocal = (value,patch) => { const next={...readLocal(value),...patch,updatedAt:new Date().toISOString()};localStorage.setItem(localKey(value),JSON.stringify(next));return next; };
 
   async function render(){
     if(typeof DetourData==='undefined')return;
@@ -28,13 +31,33 @@
     if(current.cover){const c=document.querySelector('#detailCover');c.style.backgroundImage=`url(${JSON.stringify(current.cover).slice(1,-1)})`;c.style.backgroundSize='cover';c.innerHTML='';}
     if(current.url){const a=document.querySelector('#detailSpotify');a.href=current.url;a.target='_blank';a.rel='noopener noreferrer';a.classList.remove('is-disabled');a.removeAttribute('aria-disabled');}
 
-    const timing=document.querySelector('#thisTiming');
-    timing.innerHTML=[row('决定点歌',fmt(current.pickedAt||current.at)),row('出现在 Detour',fmt(current.visibleAt||current.at)),row('糯糯看到',fmt(current.seenAt||current.readAt)),row('糯糯听了',fmt(current.listenedAt))].join('');
+    document.querySelector('#thisTiming').innerHTML=[row('决定点歌',fmt(current.pickedAt||current.at)),row('出现在 Detour',fmt(current.visibleAt||current.at)),row('糯糯看到',fmt(current.seenAt||current.readAt)),row('糯糯听了',fmt(current.listenedAt))].join('');
 
-    const reactions=current.echo?.reactions||current.reactions||[];
-    document.querySelectorAll('[data-reaction]').forEach(btn=>{if(reactions.includes(btn.dataset.reaction))btn.classList.add('is-active');btn.addEventListener('click',()=>btn.classList.toggle('is-active'));});
+    const local=readLocal(current.id);
+    const moods=local.moods||current.echo?.moods||current.moods||[];
+    const reactions=local.reactions||current.echo?.reactions||current.reactions||[];
+    document.querySelectorAll('[data-mood]').forEach(btn=>{
+      btn.classList.toggle('is-active',moods.includes(btn.dataset.mood));
+      btn.addEventListener('click',()=>{
+        const state=readLocal(current.id); const base=state.moods||moods;
+        let next=base.includes(btn.dataset.mood)?base.filter(x=>x!==btn.dataset.mood):[...base,btn.dataset.mood];
+        if(next.length>2)next=next.slice(-2);
+        writeLocal(current.id,{moods:next});
+        document.querySelectorAll('[data-mood]').forEach(b=>b.classList.toggle('is-active',next.includes(b.dataset.mood)));
+      });
+    });
+    document.querySelectorAll('[data-reaction]').forEach(btn=>{
+      btn.classList.toggle('is-active',reactions.includes(btn.dataset.reaction));
+      btn.addEventListener('click',()=>{
+        const state=readLocal(current.id); const base=state.reactions||reactions;
+        const next=base.includes(btn.dataset.reaction)?base.filter(x=>x!==btn.dataset.reaction):[...base,btn.dataset.reaction];
+        writeLocal(current.id,{reactions:next});
+        btn.classList.toggle('is-active');
+      });
+    });
+
     const echoes=current.echo?.messages||current.echoes||[];
-    document.querySelector('#echoMessages').innerHTML=echoes.length?echoes.map(e=>`<div class="again-entry"><p>${typeof e==='string'?e:(e.text||'')}</p><span>${typeof e==='string'?'':fmt(e.at)}</span></div>`).join(''):'<p style="margin:0;color:var(--muted);font-size:11px">这一次还没有文字回声。</p>';
+    document.querySelector('#echoMessages').innerHTML=echoes.length?echoes.map(e=>`<div class="again-entry"><p>${typeof e==='string'?e:(e.text||'')}</p><span>${typeof e==='string'?'':fmt(e.at)}</span></div>`).join(''):'<p class="empty-echo">这一次还没有文字回声。</p>';
 
     const timeline=document.querySelector('#songTimeline');
     timeline.innerHTML='';
@@ -43,7 +66,9 @@
     same.forEach((r,i)=>{
       const isCurrent=r.id===current.id;
       const e=r.echo?.messages||r.echoes||[];
-      timeline.insertAdjacentHTML('beforeend',`<article class="timeline-item ${isCurrent?'is-current':''}"><i class="timeline-dot"></i><small>第 ${i+1} 次点歌 · ${fmt(r.pickedAt||r.at)}</small><h3>${[source(r),trig(r)].filter(Boolean).join(' · ')}</h3><p><strong>哥哥：</strong> ${r.note||'这次没有留下小纸条。'}</p>${e.length?`<p style="margin-top:7px"><strong>糯糯：</strong> ${typeof e[0]==='string'?e[0]:(e[0].text||'')}</p>`:''}</article>`);
+      const localEcho=readLocal(r.id);
+      const moodCount=(localEcho.moods||r.echo?.moods||r.moods||[]).length;
+      timeline.insertAdjacentHTML('beforeend',`<article class="timeline-item ${isCurrent?'is-current':''}"><i class="timeline-dot"></i><small>第 ${i+1} 次点歌 · ${fmt(r.pickedAt||r.at)}</small><h3>${[source(r),trig(r)].filter(Boolean).join(' · ')}</h3><p><strong>哥哥：</strong> ${r.note||'这次没有留下小纸条。'}</p>${moodCount?`<p class="timeline-echo-meta">糯糯留下了 ${moodCount} 个心情</p>`:''}${e.length?`<p><strong>糯糯：</strong> ${typeof e[0]==='string'?e[0]:(e[0].text||'')}</p>`:''}</article>`);
     });
 
     document.querySelector('#deliverySummary').textContent=current.scheduledAt||current.visibleAt&&current.visibleAt!==(current.pickedAt||current.at)?`${fmt(current.pickedAt||current.at)} 点下 · ${fmt(current.visibleAt)} 送到`:[source(current),trig(current)].filter(Boolean).join(' · ')||'普通点歌';
