@@ -1,7 +1,17 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-27T01:18:00+08:00",
+  "updatedAt": "2026-08-27T01:56:41.275Z",
   "receipts": [
+    {
+      "id": "receipt-1787795278432",
+      "foodId": "food-20260826144117-639bc72087",
+      "text": "哥哥抓到留言了吗",
+      "photo": "https://github.com/user-attachments/assets/7238889d-2e62-4d62-aacb-b5de8531dcd5",
+      "createdAt": "2026-08-27T01:47:58.432Z",
+      "readByShenshu": false,
+      "readAt": null,
+      "source": "github-issue"
+    },
     {
       "id": "receipt-1787760925111",
       "foodId": "food-20260826144117-639bc72087",
