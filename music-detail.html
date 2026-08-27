@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#eee7fb" />
+  <title>点歌详情 · Detour</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="music-history.css?v=2" />
+</head>
+<body class="music-page music-detail-page">
+  <main class="shell sub-shell">
+    <nav class="sub-nav"><a href="music.html" aria-label="返回点歌">←</a><span>MUSIC / 01</span></nav>
+
+    <section class="detail-hero">
+      <div class="detail-song">
+        <div class="cover-placeholder" id="detailCover"><span>cover</span></div>
+        <div><p class="track-kicker">SONG</p><h1 id="detailTitle">—</h1><p id="detailArtist">—</p><p id="detailCount">点过 0 次</p><p id="detailPlaylistState">共同歌单记录待同步</p></div>
+      </div>
+      <div class="spotify-slot detail-player" id="detailPlayer"><span>真实播放入口会跟随 Spotify 曲目出现</span></div>
+      <div class="pick-actions"><a class="soft-action is-disabled" id="detailSpotify" aria-disabled="true">去 Spotify</a><a class="soft-action is-disabled" aria-disabled="true">查看歌词 ↗</a></div>
+    </section>
+
+    <section class="detail-section">
+      <div class="section-heading"><span>THIS PICK</span><span>这一次</span></div>
+      <h2 id="thisOccurrence" style="margin:0 0 6px;font-size:18px">—</h2>
+      <p id="thisTime" style="margin:0;color:var(--muted);font-size:11px">—</p>
+      <p id="thisSource" style="margin:8px 0 0;color:var(--muted);font-size:10px">—</p>
+      <p class="pick-note" id="thisNote">—</p>
+      <div class="delivery-grid" id="thisTiming"></div>
+    </section>
+
+    <section class="detail-section" id="echo">
+      <div class="section-heading"><span>YOUR ECHO</span><span>这一次你的回声</span></div>
+      <div class="echo-reactions"><button type="button" data-reaction="liked">喜欢</button><button type="button" data-reaction="looped">循环了</button><button type="button" data-reaction="cried">又骗我哭</button></div>
+      <div id="echoMessages" style="margin-top:14px"></div>
+      <a class="echo-link" href="#echo">再留一句话 <span>→</span></a>
+    </section>
+
+    <section class="detail-section" id="timeline">
+      <div class="section-heading"><span>OUR TIMELINE</span><span>这首歌在我们之间</span></div>
+      <div class="timeline" id="songTimeline"></div>
+    </section>
+
+    <section class="detail-section">
+      <div class="section-heading"><span>DELIVERY</span><span>这首歌是怎么来到你这里的</span></div>
+      <div class="delivery-summary"><span id="deliverySummary">普通点歌</span><span>↓</span></div>
+      <div class="delivery-grid" id="deliveryGrid"></div>
+    </section>
+
+    <section class="detail-section">
+      <div class="section-heading"><span>PLAYLIST</span><span>在我们的歌单里</span></div>
+      <div class="delivery-grid" id="playlistFacts"></div>
+      <a class="text-link is-disabled" id="detailPlaylist" aria-disabled="true">打开共同 Spotify 歌单 ↗</a>
+    </section>
+
+    <footer><span>nuonuo × shenshu</span><span>detour / music detail</span></footer>
+  </main>
+  <script src="data.js"></script>
+  <script src="music-detail.js?v=1"></script>
+</body>
+</html>
