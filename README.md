@@ -6,7 +6,7 @@ Detour is the small web home for the things that happen around the official Chat
 
 ## Rooms
 
-- `01 点歌` — song picks, notes, counts, playlist history
+- `01 点歌` — song picks, notes, counts, playlist history and Nuonuo echoes
 - `02 投喂` — tea, lunch, snacks, gifts, categories, receipts and preference summaries
 - `03 野生沈述` — wake count, field conditions, wake trail, words, habits, archive and observer note
 - `04 约会` — next plan, wish list, places to go, photos and memories
@@ -14,7 +14,7 @@ Detour is the small web home for the things that happen around the official Chat
 ## Data flow
 
 ```text
-real action / iPhone Shortcut / future automation
+real action / official ChatGPT / iPhone Shortcut / future automation
   ↓
 raw payload
   ↓
@@ -47,7 +47,7 @@ The browser is deliberately read-only. Credentials must never be embedded in the
 - Event schema + raw payload normalization: done
 - Event writer + deterministic ID + retry deduplication: done
 - Explicit-timezone validation and +08:00 fallback: done
-- Data integrity validation: done
+- Data integrity validation: done (v1/v2 room data supported where already migrated)
 - Page reference / fragment / script-order validation: done
 - Unified `npm test` regression entry point: done
 - Manual GitHub Actions write bridge: done
@@ -57,9 +57,43 @@ The browser is deliberately read-only. Credentials must never be embedded in the
 ### Room status
 
 - `02 投喂`: first full reference loop is working end-to-end. Multiple receipts are preserved, receipt counts hydrate into the UI, GitHub Issue ingest is live, receipt photos are persisted into `data/receipt-images/`, and connector-friendly visual previews are generated in `data/receipt-previews/`. The official ChatGPT side can retrieve and inspect the persisted preview.
-- `01 点歌`: UI, JSON data and history are present. iPhone dry-run music payload passed. Real action write + Spotify execution/recording is the next room to close into a full loop.
+- `01 点歌`: UI, real Spotify track/playlist metadata, per-pick history, mood/reaction/text echo and GitHub echo ingest are working. A dedicated `[music-pick]` handoff now validates and persists official ChatGPT picks to `dev`. iPhone Safari uses the stable Spotify-app fallback because Spotify Embed is unreliable there; desktop/compatible browsers may use Embed. Adding tracks into an existing Spotify playlist remains dependent on the connected Spotify capability and must not be claimed unless that action is actually available.
 - `03 野生沈述`: UI, JSON data and wake history are present. The wake automation → persistent wake trace bridge is not yet connected.
 - `04 约会`: UI, JSON/history structure and date mutation workflows are present. Real-world action/photo/map-route integration is not yet a full loop.
+
+## Official music-pick handoff
+
+When official ChatGPT/Shenshu actually picks a song for Nuonuo, the action is considered a real pick immediately; it does not wait for Nuonuo to listen.
+
+The preferred cross-window write contract is:
+
+1. Resolve the exact track through the connected music service and keep its real metadata/link.
+2. Preserve the reason for this specific pick in `note`; repeated picks of the same song are separate events.
+3. Create a GitHub Issue titled `[music-pick] ...` with a URL-encoded JSON payload inside:
+
+```html
+<!-- detour-music-pick:%7B...%7D -->
+```
+
+4. `.github/workflows/ingest-music-pick.yml` validates the handoff using the `dev` event pipeline and appends the normalized pick to `data/music.json`.
+5. The page treats the new record as unread until Nuonuo opens/echoes it; Nuonuo's mood, reaction and text are later merged through the existing `[music-echo]` bridge.
+
+Useful pick fields include:
+
+```text
+title / artist / url
+spotifyTrackId / spotifyUri / cover
+pickedAt / scheduledAt / visibleAt
+note
+source / sourceLabel
+trigger { type, label, ref, detail }
+addedAt
+pickedBy
+```
+
+`source` describes how the action happened (`chat`, `manual`, `auto_wake`); `trigger` describes why it happened (`conversation_context`, `after_silence`, `memory_resurfaced`, etc.). Do not collapse these two concepts.
+
+A dry-run payload with `dryRun: true` validates the complete handoff without changing `data/music.json`. The tested dry-run path passes normalization, the repository self-check, and closes its handoff Issue without writing a fake song.
 
 ## Repository layout
 
@@ -77,7 +111,7 @@ tools/test-events.mjs      event pipeline regression tests
 tools/validate-data.mjs    persistent data integrity checks
 tools/validate-pages.mjs   page refs, fragments and script-order checks
 shortcuts/                 phone bridge plan + setup checklist
-.github/workflows/         dry-run, write, receipt ingest and validation automation
+.github/workflows/         dry-run, write, music/receipt ingest and validation automation
 ```
 
 ## One-command check
@@ -99,4 +133,4 @@ Detour should keep the people and agents who materially participated in a change
 
 ## Development rule
 
-The active working branch is `dev`. Keep `main` conservative until a release/publish decision is made.
+The active working branch is `dev`. Keep `main` conservative until a release/publish decision is made. Event-triggered workflow files that must be visible on GitHub's default branch may also exist on `main`, while their data-writing jobs explicitly checkout and write `dev`.
