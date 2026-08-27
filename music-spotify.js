@@ -4,22 +4,44 @@
   const embedTrack = id => `https://open.spotify.com/embed/track/${encodeURIComponent(id)}?utm_source=generator&theme=0`;
   const embedPlaylist = id => `https://open.spotify.com/embed/playlist/${encodeURIComponent(id)}?utm_source=generator&theme=0`;
 
-  function mountStaticEmbed(host, src, title, height='152') {
-    if (!host || !src) return;
-    host.innerHTML = '';
-    host.classList.remove('spotify-loading', 'spotify-fallback');
-    host.classList.add('has-spotify-embed');
+  function ensureTrackEmbed(host, record) {
+    if (!host || !record?.spotifyTrackId) return;
+    const existing = host.querySelector('iframe[data-spotify-track]');
+    if (existing) {
+      if (existing.dataset.spotifyTrack !== record.spotifyTrackId) {
+        existing.dataset.spotifyTrack = record.spotifyTrackId;
+        existing.src = embedTrack(record.spotifyTrackId);
+        existing.title = `${record.title || 'Spotify track'} Spotify player`;
+      }
+      host.classList.add('has-spotify-embed');
+      return;
+    }
     const frame = document.createElement('iframe');
-    frame.src = src;
-    frame.title = title;
+    frame.dataset.spotifyTrack = record.spotifyTrackId;
+    frame.src = embedTrack(record.spotifyTrackId);
+    frame.title = `${record.title || 'Spotify track'} Spotify player`;
     frame.width = '100%';
-    frame.height = height;
-    frame.loading = 'eager';
-    frame.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
-    frame.referrerPolicy = 'strict-origin-when-cross-origin';
-    frame.style.border = '0';
-    frame.style.borderRadius = '16px';
-    frame.style.display = 'block';
+    frame.height = '152';
+    frame.setAttribute('frameborder', '0');
+    frame.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture');
+    frame.setAttribute('allowfullscreen', '');
+    frame.style.cssText = 'border:0;border-radius:16px;display:block';
+    host.replaceChildren(frame);
+    host.classList.add('has-spotify-embed');
+  }
+
+  function mountPlaylist(host, playlist) {
+    if (!host || !playlist?.spotifyPlaylistId) return;
+    if (host.querySelector('iframe')) return;
+    const frame = document.createElement('iframe');
+    frame.src = embedPlaylist(playlist.spotifyPlaylistId);
+    frame.title = `${playlist.name || 'Spotify playlist'} playlist`;
+    frame.width = '100%';
+    frame.height = '352';
+    frame.setAttribute('frameborder', '0');
+    frame.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture');
+    frame.setAttribute('allowfullscreen', '');
+    frame.style.cssText = 'border:0;border-radius:18px;display:block';
     host.append(frame);
   }
 
@@ -51,22 +73,17 @@
     const id = new URLSearchParams(location.search).get('id');
     const current = id ? records.find(r => r.id === id) || latest : latest;
 
-    if (document.body.classList.contains('music-v2') && latest?.spotifyTrackId) {
-      mountStaticEmbed(document.querySelector('#spotifySlot'), embedTrack(latest.spotifyTrackId), `${latest.title || 'Spotify track'} player`);
-    }
-
-    if (document.body.classList.contains('music-detail-page') && current?.spotifyTrackId) {
-      mountStaticEmbed(document.querySelector('#detailPlayer'), embedTrack(current.spotifyTrackId), `${current.title || 'Spotify track'} player`);
-    }
+    ensureTrackEmbed(document.querySelector('#spotifySlot'), latest);
+    ensureTrackEmbed(document.querySelector('#detailPlayer'), current);
 
     const playlistPanel = document.querySelector('#playlist');
     if (playlistPanel && playlist?.spotifyPlaylistId && !document.querySelector('#playlistSpotifyEmbed')) {
       const wrap = document.createElement('div');
       wrap.id = 'playlistSpotifyEmbed';
       wrap.className = 'spotify-playlist-embed';
-      mountStaticEmbed(wrap, embedPlaylist(playlist.spotifyPlaylistId), `${playlist.name || 'Spotify playlist'} playlist`, '352');
       const external = document.querySelector('#playlistExternal');
       playlistPanel.insertBefore(wrap, external || null);
+      mountPlaylist(wrap, playlist);
     }
   }
 
