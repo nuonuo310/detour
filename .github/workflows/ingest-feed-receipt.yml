@@ -2,7 +2,7 @@ name: Ingest Feed Receipt
 
 on:
   issues:
-    types: [opened]
+    types: [opened, reopened]
 
 permissions:
   contents: write
@@ -54,20 +54,9 @@ jobs:
           const path = 'data/food-receipts.json';
           const data = JSON.parse(fs.readFileSync(path, 'utf8'));
           data.receipts = Array.isArray(data.receipts) ? data.receipts : [];
-          const clean = {
-            id: String(receipt.id || `receipt-${Date.now()}`),
-            foodId: String(receipt.foodId),
-            text: String(receipt.text).slice(0, 500),
-            photo,
-            photoSource,
-            createdAt: String(receipt.createdAt),
-            readByShenshu: false,
-            readAt: null,
-            source: 'github-issue'
-          };
+          const clean = { id:String(receipt.id||`receipt-${Date.now()}`), foodId:String(receipt.foodId), text:String(receipt.text).slice(0,500), photo, photoSource, createdAt:String(receipt.createdAt), readByShenshu:false, readAt:null, source:'github-issue' };
           const existing = data.receipts.findIndex(r => r.id === clean.id);
-          if (existing >= 0) data.receipts[existing] = clean;
-          else data.receipts.unshift(clean);
+          if (existing >= 0) data.receipts[existing] = clean; else data.receipts.unshift(clean);
           data.receipts.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
           data.updatedAt = new Date().toISOString();
           fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
