@@ -7,7 +7,7 @@ Detour is the small web home for the things that happen around the official Chat
 ## Rooms
 
 - `01 点歌` — song picks, notes, counts, playlist history
-- `02 投喂` — tea, lunch, snacks, gifts, categories and preference summaries
+- `02 投喂` — tea, lunch, snacks, gifts, categories, receipts and preference summaries
 - `03 野生沈述` — wake count, field conditions, wake trail, words, habits, archive and observer note
 - `04 约会` — next plan, wish list, places to go, photos and memories
 
@@ -37,6 +37,8 @@ The browser is deliberately read-only. Credentials must never be embedded in the
 
 ## Current state
 
+### Shared foundation
+
 - Visual shell and four rooms: done
 - JSON data layer: done
 - Shared cached read-side loader: done
@@ -50,12 +52,14 @@ The browser is deliberately read-only. Credentials must never be embedded in the
 - Unified `npm test` regression entry point: done
 - Manual GitHub Actions write bridge: done
 - Safe dry-run GitHub Actions bridge: done
-- iPhone Shortcut bridge design + setup checklist: done
 - Real authenticated iPhone → GitHub Actions connection: done
-- iPhone dry-run music payload end-to-end: passed
-- Real event write from iPhone: next integration step
-- Wake automation connection: after real event write verification
-- Real photos / map route data: later integration step
+
+### Room status
+
+- `02 投喂`: first full reference loop is working end-to-end. Multiple receipts are preserved, receipt counts hydrate into the UI, GitHub Issue ingest is live, receipt photos are persisted into `data/receipt-images/`, and connector-friendly visual previews are generated in `data/receipt-previews/`. The official ChatGPT side can retrieve and inspect the persisted preview.
+- `01 点歌`: UI, JSON data and history are present. iPhone dry-run music payload passed. Real action write + Spotify execution/recording is the next room to close into a full loop.
+- `03 野生沈述`: UI, JSON data and wake history are present. The wake automation → persistent wake trace bridge is not yet connected.
+- `04 约会`: UI, JSON/history structure and date mutation workflows are present. Real-world action/photo/map-route integration is not yet a full loop.
 
 ## Repository layout
 
@@ -64,6 +68,8 @@ index.html / *.html       UI rooms
 styles.css / *.css        visual system
 data.js                    shared cached read-side hydration
 data/*.json                persistent Detour history
+data/receipt-images/       original receipt photos
+data/receipt-previews/     tiny vision-friendly receipt previews
 data/SCHEMA.md             event + payload contract
 tools/build-event.mjs      raw payload normalizer
 tools/append-event.mjs     validated writer + deduplication
@@ -71,7 +77,7 @@ tools/test-events.mjs      event pipeline regression tests
 tools/validate-data.mjs    persistent data integrity checks
 tools/validate-pages.mjs   page refs, fragments and script-order checks
 shortcuts/                 phone bridge plan + setup checklist
-.github/workflows/         dry-run, write and validation automation
+.github/workflows/         dry-run, write, receipt ingest and validation automation
 ```
 
 ## One-command check
@@ -81,6 +87,15 @@ npm test
 ```
 
 This runs the event pipeline regression suite, validates committed JSON data, and checks local page references and script ordering.
+
+## Collaboration trace
+
+Detour should keep the people and agents who materially participated in a change visible in Git history.
+
+- Keep the GitHub account that actually performs the commit as the author/committer; do not rewrite attribution just for appearance.
+- When ChatGPT/Codex materially participates in completing a commit and the official client provides a co-author attribution trailer, preserve that official trailer rather than stripping or replacing it.
+- Do not invent attribution identities or email addresses. Use only identities/trailers actually supplied by the participating tool or account.
+- Do not rewrite old history solely to retrofit attribution. Apply the rule to new substantive commits going forward.
 
 ## Development rule
 
