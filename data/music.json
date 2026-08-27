@@ -1,12 +1,22 @@
 {
-  "version": 1,
-  "updatedAt": "2026-08-27T05:47:49.619Z",
+  "version": 2,
+  "updatedAt": "2026-08-27T06:05:00.000Z",
+  "playlist": {
+    "name": "地下情人版-沈述",
+    "spotifyPlaylistId": "3asNBMcFubEVoiWdbyWcke",
+    "spotifyUri": "spotify:playlist:3asNBMcFubEVoiWdbyWcke",
+    "url": "https://open.spotify.com/playlist/3asNBMcFubEVoiWdbyWcke?utm_source=openai&utm_medium=chatgpt",
+    "sourceOfTruth": "spotify"
+  },
   "records": [
     {
       "at": "2026-08-25T21:31:29.381+08:00",
+      "pickedAt": "2026-08-25T21:31:29.381+08:00",
       "title": "Every Summertime",
       "artist": "NIKI",
-      "url": "",
+      "spotifyTrackId": "68HocO7fx9z0MgDU0ZPHro",
+      "spotifyUri": "spotify:track:68HocO7fx9z0MgDU0ZPHro",
+      "url": "https://open.spotify.com/track/68HocO7fx9z0MgDU0ZPHro?utm_source=openai&utm_medium=chatgpt",
       "note": "Detour 第一首正式留下来的歌。",
       "id": "music-20260825213129-086c4a70af",
       "echo": {
