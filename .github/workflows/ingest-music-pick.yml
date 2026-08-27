@@ -1,0 +1,87 @@
+name: Ingest Music Pick
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: detour-data-writer
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    if: startsWith(github.event.issue.title, '[music-pick]') && github.actor == 'nuonuo310'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Read and validate handoff payload
+        id: handoff
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const body = process.env.ISSUE_BODY || '';
+          const match = body.match(/<!--\s*detour-music-pick:([\s\S]*?)\s*-->/);
+          if (!match) throw new Error('missing detour music pick payload');
+          const payload = JSON.parse(decodeURIComponent(match[1].trim()));
+          if (!String(payload.title || payload.song || '').trim()) throw new Error('music pick title is required');
+          if (!String(payload.artist || '').trim()) throw new Error('music pick artist is required');
+          if (!String(payload.url || payload.link || '').trim()) throw new Error('music pick Spotify URL is required');
+          fs.writeFileSync('/tmp/detour-music-pick.json', JSON.stringify(payload));
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `dry_run=${payload.dryRun === true ? 'true' : 'false'}\n`);
+          NODE
+
+      - name: Normalize pick event
+        run: |
+          PAYLOAD=$(cat /tmp/detour-music-pick.json)
+          EVENT=$(node tools/build-event.mjs --type music --payload "$PAYLOAD")
+          printf '%s' "$EVENT" > /tmp/detour-event.json
+          node -e "const e=require('/tmp/detour-event.json'); if(!e.title||!e.artist||!e.url) process.exit(1); console.log('validated:', e.title, '-', e.artist)"
+
+      - name: Run Detour self-check
+        run: npm test
+
+      - name: Append pick to music history
+        if: steps.handoff.outputs.dry_run != 'true'
+        run: |
+          EVENT=$(cat /tmp/detour-event.json)
+          node tools/append-event.mjs --type music --event "$EVENT"
+          npm run validate:data
+
+      - name: Commit music pick
+        if: steps.handoff.outputs.dry_run != 'true'
+        run: |
+          if git diff --quiet -- data/music.json; then
+            echo "No music data change to commit."
+            exit 0
+          fi
+          git config user.name "detour-music-pick-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/music.json
+          git commit -m "data: ingest music pick #${{ github.event.issue.number }}"
+          git push origin HEAD:dev
+
+      - name: Close handoff issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ steps.handoff.outputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            COMMENT="Music pick handoff validated successfully (dry run; no data written)."
+          else
+            COMMENT="Music pick synced to Detour dev data."
+          fi
+          gh issue close "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --comment "$COMMENT"
