@@ -61,8 +61,8 @@ jobs:
               `dst=${JSON.stringify(previewPath)}`,
               'im=Image.open(src)',
               'im=ImageOps.exif_transpose(im).convert("RGB")',
-              'im.thumbnail((768,768))',
-              'im.save(dst,"JPEG",quality=68,optimize=True)'
+              'im.thumbnail((320,320))',
+              'im.save(dst,"JPEG",quality=52,optimize=True)'
             ].join(';')]);
             photoPreview = previewPath;
           }
