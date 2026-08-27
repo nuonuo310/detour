@@ -11,6 +11,24 @@
   const songKey = r => r.spotifyTrackId || `${r.title || ''}::${r.artist || ''}`.toLowerCase();
   const sourceLabel = r => r.sourceLabel || ({auto_wake:'自动唤醒',chat:'聊天中',manual:'主动点歌'}[r.source] || '聊天中');
   const triggerLabel = r => r.trigger?.label || r.triggerLabel || '';
+  const localKey = id => `detour:music-echo:${id || 'latest'}`;
+
+  function readLocalEcho(id) {
+    try { return JSON.parse(localStorage.getItem(localKey(id)) || '{}'); } catch { return {}; }
+  }
+  function writeLocalEcho(id, patch) {
+    const current = readLocalEcho(id);
+    const next = { ...current, ...patch, updatedAt: new Date().toISOString() };
+    localStorage.setItem(localKey(id), JSON.stringify(next));
+    return next;
+  }
+  function mergedSelections(latest) {
+    const local = readLocalEcho(latest.id);
+    return {
+      moods: local.moods || latest.echo?.moods || latest.moods || [],
+      reactions: local.reactions || latest.echo?.reactions || latest.reactions || []
+    };
+  }
 
   async function render() {
     if (typeof DetourData === 'undefined') return;
@@ -48,11 +66,30 @@
     document.querySelector('#pickSeenState').textContent = seen ? '已读' : '新点歌';
     document.querySelector('#newPickLink').textContent = `新点歌 · ${records.filter(r=>!(r.seenAt||r.readAt)).length}`;
 
-    const reactions = latest.echo?.reactions || latest.reactions || [];
-    document.querySelectorAll('[data-reaction]').forEach(btn=>{ if(reactions.includes(btn.dataset.reaction)) btn.classList.add('is-active'); });
+    const selections = mergedSelections(latest);
+    document.querySelectorAll('[data-reaction]').forEach(btn=>btn.classList.toggle('is-active', selections.reactions.includes(btn.dataset.reaction)));
+    document.querySelectorAll('[data-mood]').forEach(btn=>btn.classList.toggle('is-active', selections.moods.includes(btn.dataset.mood)));
     const echoCount = latest.echo?.messages?.length || latest.echoes?.length || 0;
-    document.querySelector('#echoState').textContent = echoCount ? `已留 ${echoCount} 条` : '未回应';
+    document.querySelector('#echoState').textContent = echoCount ? `已留 ${echoCount} 条` : (selections.moods.length || selections.reactions.length ? '已选择' : '未回应');
     document.querySelector('#echoLink').childNodes[0].nodeValue = echoCount ? `糯糯留了 ${echoCount} 条回声 ` : '给哥哥留句话 ';
+
+    document.querySelectorAll('[data-reaction]').forEach(btn=>btn.addEventListener('click',()=>{
+      const current = mergedSelections(latest);
+      const value = btn.dataset.reaction;
+      const reactions = current.reactions.includes(value) ? current.reactions.filter(x=>x!==value) : [...current.reactions,value];
+      writeLocalEcho(latest.id,{reactions});
+      btn.classList.toggle('is-active');
+      document.querySelector('#echoState').textContent = reactions.length || current.moods.length ? '已选择' : '未回应';
+    }));
+    document.querySelectorAll('[data-mood]').forEach(btn=>btn.addEventListener('click',()=>{
+      const current = mergedSelections(latest);
+      const value = btn.dataset.mood;
+      let moods = current.moods.includes(value) ? current.moods.filter(x=>x!==value) : [...current.moods,value];
+      if (moods.length > 2) moods = moods.slice(-2);
+      writeLocalEcho(latest.id,{moods});
+      document.querySelectorAll('[data-mood]').forEach(b=>b.classList.toggle('is-active', moods.includes(b.dataset.mood)));
+      document.querySelector('#echoState').textContent = moods.length || current.reactions.length ? '已选择' : '未回应';
+    }));
 
     if (sameSong.length > 1) {
       const previous = sameSong.slice(0,-1).at(-1);
@@ -89,6 +126,5 @@
     });
   }
 
-  document.querySelectorAll('[data-reaction]').forEach(btn=>btn.addEventListener('click',()=>btn.classList.toggle('is-active')));
   render();
 })();
