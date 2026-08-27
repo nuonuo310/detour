@@ -3,9 +3,41 @@
 
   const embedTrack = id => `https://open.spotify.com/embed/track/${encodeURIComponent(id)}?utm_source=generator&theme=0`;
   const embedPlaylist = id => `https://open.spotify.com/embed/playlist/${encodeURIComponent(id)}?utm_source=generator&theme=0`;
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  function makeNativeCard(host, record) {
+    if (!host || !record?.url) return;
+    host.classList.remove('has-spotify-embed');
+    host.classList.add('spotify-native-card');
+    host.innerHTML = '';
+
+    const copy = document.createElement('div');
+    copy.className = 'spotify-native-copy';
+    const label = document.createElement('span');
+    label.textContent = 'SPOTIFY';
+    const title = document.createElement('strong');
+    title.textContent = record.title || '这首歌';
+    const artist = document.createElement('small');
+    artist.textContent = record.artist || 'Spotify';
+    copy.append(label, title, artist);
+
+    const play = document.createElement('a');
+    play.className = 'spotify-native-play';
+    play.href = record.url;
+    play.target = '_blank';
+    play.rel = 'noopener noreferrer';
+    play.textContent = '在 Spotify 播放 ↗';
+
+    host.append(copy, play);
+  }
 
   function ensureTrackEmbed(host, record) {
     if (!host || !record?.spotifyTrackId) return;
+    if (isIOS) {
+      makeNativeCard(host, record);
+      return;
+    }
     const existing = host.querySelector('iframe[data-spotify-track]');
     if (existing) {
       if (existing.dataset.spotifyTrack !== record.spotifyTrackId) {
@@ -32,6 +64,10 @@
 
   function mountPlaylist(host, playlist) {
     if (!host || !playlist?.spotifyPlaylistId) return;
+    if (isIOS) {
+      host.remove();
+      return;
+    }
     if (host.querySelector('iframe')) return;
     const frame = document.createElement('iframe');
     frame.src = embedPlaylist(playlist.spotifyPlaylistId);
