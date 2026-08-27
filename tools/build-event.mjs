@@ -78,7 +78,7 @@ function nowAtOffset(offsetMinutes = 480) {
   return `${iso}${sign}${hh}:${mm}`;
 }
 
-const at = payload.at || nowAtOffset();
+const at = payload.at || payload.pickedAt || nowAtOffset();
 const base = { at };
 let event;
 
@@ -93,13 +93,28 @@ if (type === 'wake') {
     status: payload.status || 'awake'
   };
 } else if (type === 'music') {
+  const trigger = payload.trigger && typeof payload.trigger === 'object' && !Array.isArray(payload.trigger)
+    ? payload.trigger
+    : (payload.trigger ? { type: String(payload.trigger) } : undefined);
   event = {
     ...base,
+    pickedAt: payload.pickedAt || at,
+    scheduledAt: payload.scheduledAt || undefined,
+    visibleAt: payload.visibleAt || undefined,
     title: payload.title || payload.song || '',
     artist: payload.artist || '',
     url: payload.url || payload.link || '',
-    note: payload.note || payload.message || ''
+    spotifyTrackId: payload.spotifyTrackId || payload.trackId || '',
+    spotifyUri: payload.spotifyUri || '',
+    cover: payload.cover || payload.coverUrl || '',
+    note: payload.note || payload.message || '',
+    source: payload.source || 'chat',
+    sourceLabel: payload.sourceLabel || '',
+    trigger,
+    addedAt: payload.addedAt || undefined,
+    pickedBy: payload.pickedBy || 'shenshu'
   };
+  for (const key of Object.keys(event)) if (event[key] === undefined || event[key] === '') delete event[key];
 } else {
   event = {
     ...base,
