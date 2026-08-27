@@ -7,69 +7,20 @@
   const specText=r=>Array.isArray(r?.specs)&&r.specs.length?r.specs.join(' · '):'—';
   const fmt=v=>{const d=new Date(v);if(Number.isNaN(d.valueOf()))return '—';return `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
   const params=new URLSearchParams(location.search),requestedId=params.get('id');
-  const localKey=id=>`detour:food-receipts:${id}`;
-  const legacyKey=id=>`detour:food-receipt:${id}`;
+  const localKey=id=>`detour:food-receipts:${id}`,legacyKey=id=>`detour:food-receipt:${id}`;
   const readLocal=id=>{let list=[];try{const raw=JSON.parse(localStorage.getItem(localKey(id))||'[]');if(Array.isArray(raw))list=raw}catch{};try{const old=JSON.parse(localStorage.getItem(legacyKey(id))||'null');if(old&&!list.some(x=>x.id===old.id))list.push(old)}catch{};return list};
   const writeLocal=(id,list)=>localStorage.setItem(localKey(id),JSON.stringify(list));
-  const cloudIssueUrl=receipt=>{
-    const payload=encodeURIComponent(JSON.stringify({...receipt,photo:null,source:'github-issue'}));
-    const title=encodeURIComponent(`[feed-receipt] ${receipt.foodId}`);
-    const photoNote=receipt.localPhotoName?`\n\n如果要同步照片：请把「${receipt.localPhotoName}」拖到这一行下面，等图片上传完成后再点 Create。\n\n`:'\n\n';
-    const body=encodeURIComponent(`Detour Feed Receipt${photoNote}<!-- detour-receipt:${payload} -->\n\n由 Detour 页面生成，请直接提交。`);
-    return `https://github.com/nuonuo310/detour/issues/new?title=${title}&body=${body}`;
-  };
-
+  const cloudIssueUrl=receipt=>{const payload=encodeURIComponent(JSON.stringify({...receipt,photo:null,source:'github-issue'}));const title=encodeURIComponent(`[feed-receipt] ${receipt.foodId}`);const photoNote=receipt.localPhotoName?`\n\n如果要同步照片：请在这里添加「${receipt.localPhotoName}」，等图片上传完成后再点 Create。\n\n`:'\n\n';const body=encodeURIComponent(`Detour Feed Receipt${photoNote}<!-- detour-receipt:${payload} -->\n\n由 Detour 页面生成，请直接提交。`);return `https://github.com/nuonuo310/detour/issues/new?title=${title}&body=${body}`};
   let record=null,cloudReceipts=[],selectedPhoto=null;
-
   async function init(){
     const [food,receiptData]=await Promise.all([DetourData.load('food'),DetourData.load('food-receipts')]);
-    const records=[...(food?.records||[])].sort((a,b)=>new Date(b.at)-new Date(a.at));
-    record=records.find(r=>r.id===requestedId)||records[0];
-    if(!record)return;
-    document.querySelector('[data-record-card] h2').textContent=record.item||'一份小投喂';
-    document.querySelector('.detail-shop').textContent=record.shop||'—';
-    document.querySelector('.detail-specs').textContent=specText(record);
-    document.querySelector('.detail-reason').textContent=record.reason||'这次没有留下更多说明。';
-    document.querySelector('.detail-visual').innerHTML=visualMarkup(record);
-    document.querySelector('[data-meta-time]').textContent=fmt(record.at);
-    document.querySelector('[data-meta-category]').textContent=record.category||'投喂';
-    document.querySelector('[data-record-content]').textContent=[record.item,record.shop,specText(record)].filter(v=>v&&v!=='—').join(' · ')||'—';
-
-    cloudReceipts=(receiptData?.receipts||[]).filter(r=>r.foodId===record.id);
-    renderAll();
-
-    const form=document.querySelector('.receipt-form');
-    form.addEventListener('submit',e=>{
-      e.preventDefault();
-      const text=document.querySelector('#receiptText').value.trim();
-      if(!text)return;
-      const next={id:`receipt-${Date.now()}`,foodId:record.id,text,photo:selectedPhoto?.dataUrl||null,localPhotoName:selectedPhoto?.name||null,createdAt:new Date().toISOString(),readByShenshu:false,readAt:null,source:'local'};
-      const local=readLocal(record.id);local.unshift(next);writeLocal(record.id,local);
-      document.querySelector('#receiptText').value='';clearPhoto();renderAll();
-    });
-
-    const picker=document.querySelector('#receiptPhoto'),pickBtn=document.querySelector('[data-pick-photo]');
-    pickBtn.addEventListener('click',()=>picker.click());
-    picker.addEventListener('change',()=>{const file=picker.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{selectedPhoto={name:file.name,dataUrl:String(reader.result||'')};const box=document.querySelector('[data-photo-preview]');box.hidden=false;box.querySelector('img').src=selectedPhoto.dataUrl;};reader.readAsDataURL(file)});
-    document.querySelector('[data-remove-photo]').addEventListener('click',clearPhoto);
+    const records=[...(food?.records||[])].sort((a,b)=>new Date(b.at)-new Date(a.at));record=records.find(r=>r.id===requestedId)||records[0];if(!record)return;
+    document.querySelector('[data-record-card] h2').textContent=record.item||'一份小投喂';document.querySelector('.detail-shop').textContent=record.shop||'—';document.querySelector('.detail-specs').textContent=specText(record);document.querySelector('.detail-reason').textContent=record.reason||'这次没有留下更多说明。';document.querySelector('.detail-visual').innerHTML=visualMarkup(record);document.querySelector('[data-meta-time]').textContent=fmt(record.at);document.querySelector('[data-meta-category]').textContent=record.category||'投喂';document.querySelector('[data-record-content]').textContent=[record.item,record.shop,specText(record)].filter(v=>v&&v!=='—').join(' · ')||'—';
+    cloudReceipts=(receiptData?.receipts||[]).filter(r=>r.foodId===record.id);renderAll();
+    document.querySelector('.receipt-form').addEventListener('submit',e=>{e.preventDefault();const field=document.querySelector('#receiptText');const text=field.value.trim();if(!text)return;const next={id:`receipt-${Date.now()}`,foodId:record.id,text,photo:null,localPhotoName:selectedPhoto?.name||null,createdAt:new Date().toISOString(),readByShenshu:false,readAt:null,source:'local'};const local=readLocal(record.id);local.unshift(next);try{writeLocal(record.id,local)}catch(err){console.error('receipt save failed',err);alert('回执暂时没保存成功，请重试一次。');return}field.value='';clearPhoto();renderAll();});
+    const picker=document.querySelector('#receiptPhoto');document.querySelector('[data-pick-photo]').addEventListener('click',()=>picker.click());picker.addEventListener('change',()=>{const file=picker.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{selectedPhoto={name:file.name,dataUrl:String(reader.result||'')};const box=document.querySelector('[data-photo-preview]');box.hidden=false;box.querySelector('img').src=selectedPhoto.dataUrl};reader.readAsDataURL(file)});document.querySelector('[data-remove-photo]').addEventListener('click',clearPhoto);
   }
-
   function clearPhoto(){selectedPhoto=null;const picker=document.querySelector('#receiptPhoto');if(picker)picker.value='';const box=document.querySelector('[data-photo-preview]');if(box){box.hidden=true;box.querySelector('img').removeAttribute('src')}}
-
-  function renderAll(){
-    const local=readLocal(record.id);
-    const cloudIds=new Set(cloudReceipts.map(r=>r.id));
-    const combined=[...cloudReceipts,...local.filter(r=>!cloudIds.has(r.id))].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-    const list=document.querySelector('[data-receipt-list]'),state=document.querySelector('[data-receipt-state]'),status=document.querySelector('[data-meta-status]');
-    if(!combined.length){list.innerHTML='';state.textContent='还没有留下回应';status.textContent='等待回执';return;}
-    const unread=combined.filter(r=>!r.readByShenshu).length;
-    state.textContent=`已收到 · ${combined.length} 条回应`;
-    status.textContent=unread?`新回执 ${unread}`:'已读';
-    list.innerHTML=combined.map(r=>{
-      const isCloud=cloudIds.has(r.id);
-      const photo=r.photo?(/^data:image\//.test(r.photo)?`<img src="${esc(r.photo)}" alt="收到时的照片" />`:`<img src="${esc(r.photo)}" alt="收到时的照片" loading="lazy" />`):'<div class="photo-placeholder">这条回执没有附照片</div>';
-      return `<article class="receipt-entry"><div class="receipt-line"><span>回执时间</span><strong>${fmt(r.createdAt)}</strong></div><div class="receipt-line receipt-message"><span>你的回应</span><p>${esc(r.text||'（没有文字）')}</p></div><div class="receipt-photo"><span>收到时的照片</span>${photo}</div><div class="receipt-entry-foot"><span>${r.readByShenshu?'哥哥已看过':isCloud?'云端已收到':'本机待同步'}</span>${!isCloud?`<a class="cloud-sync" href="${cloudIssueUrl(r)}" target="_blank" rel="noopener">同步到云端${r.localPhotoName?' · 记得附照片':''}</a>`:''}</div></article>`;
-    }).join('');
-  }
+  function renderAll(){const local=readLocal(record.id),cloudIds=new Set(cloudReceipts.map(r=>r.id));const combined=[...cloudReceipts,...local.filter(r=>!cloudIds.has(r.id))].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));const list=document.querySelector('[data-receipt-list]'),state=document.querySelector('[data-receipt-state]'),status=document.querySelector('[data-meta-status]');if(!combined.length){list.innerHTML='';state.textContent='还没有留下回应';status.textContent='等待回执';return;}const unread=combined.filter(r=>!r.readByShenshu).length;state.textContent=`已收到 · ${combined.length} 条回应`;status.textContent=unread?`新回执 ${unread}`:'已读';list.innerHTML=combined.map(r=>{const isCloud=cloudIds.has(r.id);const photo=r.photo?`<img src="${esc(r.photo)}" alt="收到时的照片" loading="lazy" />`:'<div class="photo-placeholder">这条回执没有附照片</div>';return `<article class="receipt-entry"><div class="receipt-line"><span>回执时间</span><strong>${fmt(r.createdAt)}</strong></div><div class="receipt-line receipt-message"><span>你的回应</span><p>${esc(r.text||'（没有文字）')}</p></div><div class="receipt-photo"><span>收到时的照片</span>${photo}</div><div class="receipt-entry-foot"><span>${r.readByShenshu?'哥哥已看过':isCloud?'云端已收到':'本机待同步'}</span>${!isCloud?`<a class="cloud-sync" href="${cloudIssueUrl(r)}" target="_blank" rel="noopener">同步到云端${r.localPhotoName?' · 附上照片':''}</a>`:''}</div></article>`}).join('')}
   init();
 })();
