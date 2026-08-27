@@ -6,9 +6,9 @@ import process from 'node:process';
 
 const root = path.resolve(import.meta.dirname, '..');
 const specs = {
-  music: { required: ['id', 'at', 'title'] },
-  food: { required: ['id', 'at', 'category', 'item'] },
-  wake: { required: ['id', 'at', 'action'] }
+  music: { required: ['id', 'at', 'title'], versions: [1, 2] },
+  food: { required: ['id', 'at', 'category', 'item'], versions: [1, 2] },
+  wake: { required: ['id', 'at', 'action'], versions: [1] }
 };
 
 let errors = 0;
@@ -25,7 +25,7 @@ for (const [name, spec] of Object.entries(specs)) {
     continue;
   }
 
-  if (data.version !== 1) fail(`${name}.json version must be 1`);
+  if (!spec.versions.includes(data.version)) fail(`${name}.json version must be one of: ${spec.versions.join(', ')}`);
   if (!Array.isArray(data.records)) {
     fail(`${name}.json records must be an array`);
     continue;
@@ -37,6 +37,11 @@ for (const [name, spec] of Object.entries(specs)) {
       if (typeof record[key] !== 'string' || !record[key].trim()) fail(`${name}.records[${index}].${key} is required`);
     }
     if (record.at && !validDate(record.at)) fail(`${name}.records[${index}].at is invalid`);
+    if (record.pickedAt && !validDate(record.pickedAt)) fail(`${name}.records[${index}].pickedAt is invalid`);
+    if (record.scheduledAt && !validDate(record.scheduledAt)) fail(`${name}.records[${index}].scheduledAt is invalid`);
+    if (record.visibleAt && !validDate(record.visibleAt)) fail(`${name}.records[${index}].visibleAt is invalid`);
+    if (record.seenAt && !validDate(record.seenAt)) fail(`${name}.records[${index}].seenAt is invalid`);
+    if (record.listenedAt && !validDate(record.listenedAt)) fail(`${name}.records[${index}].listenedAt is invalid`);
     if (record.id) {
       if (ids.has(record.id)) fail(`${name}.json contains duplicate id ${record.id}`);
       ids.add(record.id);
