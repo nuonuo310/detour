@@ -30,22 +30,54 @@ Raw payload aliases accepted by the builder include `choice → action`, `reason
 
 ## Music event — `music.json`
 
+Music v2 keeps two ideas separate:
+
+1. `records` is the append-only history of individual picks. The same song may appear more than once because each occurrence preserves its own time, note, source, trigger, and echo.
+2. The Detour song library is derived from `records` by song identity (`spotifyTrackId`, falling back to title + artist). It is not a mirror of a Spotify playlist. Spotify is currently only a playback provider / external destination for each track.
+
 ```json
 {
-  "version": 1,
-  "updatedAt": "2026-08-25T15:00:00+08:00",
+  "version": 2,
+  "updatedAt": "2026-08-27T14:40:00Z",
+  "library": {
+    "name": "哥哥的歌单",
+    "sourceOfTruth": "detour",
+    "derivedFrom": "records",
+    "playbackProvider": "spotify-links"
+  },
   "records": [
     {
       "id": "music-20260825150000-a1b2c3d4e5",
       "at": "2026-08-25T15:00:00+08:00",
+      "pickedAt": "2026-08-25T15:00:00+08:00",
       "title": "歌名",
       "artist": "歌手",
-      "url": "https://...",
-      "note": "沈述留下的话"
+      "spotifyTrackId": "optional-track-id",
+      "url": "https://open.spotify.com/track/...",
+      "note": "沈述这一次为什么点",
+      "source": "chat",
+      "trigger": null,
+      "scheduledAt": null,
+      "visibleAt": null,
+      "echo": {
+        "moods": [],
+        "reactions": [],
+        "messages": []
+      }
     }
   ]
 }
 ```
+
+Rules for music:
+
+- One pick action always creates one record, even when the song has appeared before.
+- The UI groups matching records into one Detour library song and derives `pickCount`, first/last pick time, and the per-song timeline.
+- Adding a track manually to a Spotify playlist does not create a Detour pick. A song enters this library because Shenshu actually picked it for Nuonuo.
+- `url` / `spotifyTrackId` are playback metadata, not the song library source of truth.
+- `pickedAt` is when the pick was decided; `scheduledAt` and `visibleAt` are optional delivery timing fields.
+- `source` and `trigger` explain how the pick happened (for example chat vs an automatic wake).
+- Echo data belongs to the individual pick occurrence, not globally to the song.
 
 Raw payload aliases accepted by the builder include `song → title`, `link → url`, and `message → note`.
 
