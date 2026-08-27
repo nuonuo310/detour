@@ -6,49 +6,55 @@
   <meta name="theme-color" content="#eee7fb" />
   <title>点歌详情 · Detour</title>
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="music-history.css?v=2" />
+  <link rel="stylesheet" href="music-history.css?v=3" />
 </head>
 <body class="music-page music-detail-page">
   <main class="shell sub-shell">
     <nav class="sub-nav"><a href="music.html" aria-label="返回点歌">←</a><span>MUSIC / 01</span></nav>
 
-    <section class="detail-hero">
+    <section class="detail-hero music-reveal">
       <div class="detail-song">
-        <div class="cover-placeholder" id="detailCover"><span>cover</span></div>
+        <div class="cover-placeholder living-cover" id="detailCover"><span>cover</span></div>
         <div><p class="track-kicker">SONG</p><h1 id="detailTitle">—</h1><p id="detailArtist">—</p><p id="detailCount">点过 0 次</p><p id="detailPlaylistState">共同歌单记录待同步</p></div>
       </div>
       <div class="spotify-slot detail-player" id="detailPlayer"><span>真实播放入口会跟随 Spotify 曲目出现</span></div>
       <div class="pick-actions"><a class="soft-action is-disabled" id="detailSpotify" aria-disabled="true">去 Spotify</a><a class="soft-action is-disabled" aria-disabled="true">查看歌词 ↗</a></div>
     </section>
 
-    <section class="detail-section">
+    <section class="detail-section music-reveal delay-1">
       <div class="section-heading"><span>THIS PICK</span><span>这一次</span></div>
-      <h2 id="thisOccurrence" style="margin:0 0 6px;font-size:18px">—</h2>
-      <p id="thisTime" style="margin:0;color:var(--muted);font-size:11px">—</p>
-      <p id="thisSource" style="margin:8px 0 0;color:var(--muted);font-size:10px">—</p>
+      <h2 id="thisOccurrence" class="detail-pick-title">—</h2>
+      <p id="thisTime" class="detail-muted">—</p>
+      <p id="thisSource" class="detail-muted detail-source">—</p>
       <p class="pick-note" id="thisNote">—</p>
       <div class="delivery-grid" id="thisTiming"></div>
     </section>
 
-    <section class="detail-section" id="echo">
+    <section class="detail-section music-reveal delay-2" id="echo">
       <div class="section-heading"><span>YOUR ECHO</span><span>这一次你的回声</span></div>
+      <p class="echo-prompt">那时候听这首歌，我是……</p>
+      <div class="mood-chips" role="group" aria-label="这一次的心情">
+        <button type="button" data-mood="happy">开心</button><button type="button" data-mood="miss">想你</button><button type="button" data-mood="sad">难过</button><button type="button" data-mood="calm">平静</button><button type="button" data-mood="hurt">委屈</button><button type="button" data-mood="flutter">心动</button>
+      </div>
+      <p class="echo-prompt echo-prompt-secondary">对这次点歌</p>
       <div class="echo-reactions"><button type="button" data-reaction="liked">喜欢</button><button type="button" data-reaction="looped">循环了</button><button type="button" data-reaction="cried">又骗我哭</button></div>
-      <div id="echoMessages" style="margin-top:14px"></div>
+      <div id="echoMessages" class="echo-messages"></div>
+      <p class="echo-sync-hint">当前选择先保存在本机；下一步会接 GitHub 云端回声。</p>
       <a class="echo-link" href="#echo">再留一句话 <span>→</span></a>
     </section>
 
-    <section class="detail-section" id="timeline">
+    <section class="detail-section music-reveal" id="timeline">
       <div class="section-heading"><span>OUR TIMELINE</span><span>这首歌在我们之间</span></div>
       <div class="timeline" id="songTimeline"></div>
     </section>
 
-    <section class="detail-section">
+    <section class="detail-section music-reveal">
       <div class="section-heading"><span>DELIVERY</span><span>这首歌是怎么来到你这里的</span></div>
       <div class="delivery-summary"><span id="deliverySummary">普通点歌</span><span>↓</span></div>
       <div class="delivery-grid" id="deliveryGrid"></div>
     </section>
 
-    <section class="detail-section">
+    <section class="detail-section music-reveal">
       <div class="section-heading"><span>PLAYLIST</span><span>在我们的歌单里</span></div>
       <div class="delivery-grid" id="playlistFacts"></div>
       <a class="text-link is-disabled" id="detailPlaylist" aria-disabled="true">打开共同 Spotify 歌单 ↗</a>
@@ -57,6 +63,6 @@
     <footer><span>nuonuo × shenshu</span><span>detour / music detail</span></footer>
   </main>
   <script src="data.js"></script>
-  <script src="music-detail.js?v=1"></script>
+  <script src="music-detail.js?v=2"></script>
 </body>
 </html>
