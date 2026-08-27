@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install image helper
+        run: python3 -m pip install --quiet pillow
       - name: Append receipt and persist photo
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
@@ -34,12 +36,14 @@ jobs:
           if (!receipt.foodId || !receipt.text || !receipt.createdAt) throw new Error('invalid receipt payload');
           const markdownImage = body.match(/!\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/)?.[1];
           const githubAttachment = body.match(/https:\/\/github\.com\/user-attachments\/assets\/[A-Za-z0-9-]+/)?.[0];
-          const sourcePhoto = markdownImage || githubAttachment || receipt.photo || null;
-          let photo = sourcePhoto;
-          let photoSource = sourcePhoto;
+          const sourcePhoto = markdownImage || githubAttachment || receipt.photoSource || receipt.photo || null;
+          let photo = receipt.photo || sourcePhoto;
+          let photoPreview = receipt.photoPreview || null;
+          const photoSource = sourcePhoto;
           if (sourcePhoto && /^https:\/\/github\.com\/user-attachments\/assets\//.test(sourcePhoto)) {
             const safeId = String(receipt.id || `receipt-${Date.now()}`).replace(/[^A-Za-z0-9._-]/g, '_');
             fs.mkdirSync('data/receipt-images', { recursive: true });
+            fs.mkdirSync('data/receipt-previews', { recursive: true });
             const tmp = `data/receipt-images/${safeId}.tmp`;
             execFileSync('curl', ['-L', '--fail', '--silent', '--show-error', sourcePhoto, '-o', tmp]);
             const head = fs.readFileSync(tmp).subarray(0, 16);
@@ -50,11 +54,22 @@ jobs:
             const finalPath = `data/receipt-images/${safeId}${ext}`;
             fs.renameSync(tmp, finalPath);
             photo = finalPath;
+            const previewPath = `data/receipt-previews/${safeId}.jpg`;
+            execFileSync('python3', ['-c', [
+              'from PIL import Image, ImageOps',
+              `src=${JSON.stringify(finalPath)}`,
+              `dst=${JSON.stringify(previewPath)}`,
+              'im=Image.open(src)',
+              'im=ImageOps.exif_transpose(im).convert("RGB")',
+              'im.thumbnail((768,768))',
+              'im.save(dst,"JPEG",quality=68,optimize=True)'
+            ].join(';')]);
+            photoPreview = previewPath;
           }
           const path = 'data/food-receipts.json';
           const data = JSON.parse(fs.readFileSync(path, 'utf8'));
           data.receipts = Array.isArray(data.receipts) ? data.receipts : [];
-          const clean = { id:String(receipt.id||`receipt-${Date.now()}`), foodId:String(receipt.foodId), text:String(receipt.text).slice(0,500), photo, photoSource, createdAt:String(receipt.createdAt), readByShenshu:false, readAt:null, source:'github-issue' };
+          const clean = { id:String(receipt.id||`receipt-${Date.now()}`), foodId:String(receipt.foodId), text:String(receipt.text).slice(0,500), photo, photoPreview, photoSource, createdAt:String(receipt.createdAt), readByShenshu:false, readAt:null, source:'github-issue' };
           const existing = data.receipts.findIndex(r => r.id === clean.id);
           if (existing >= 0) data.receipts[existing] = clean; else data.receipts.unshift(clean);
           data.receipts.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
@@ -65,7 +80,7 @@ jobs:
         run: |
           git config user.name "detour-receipt-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/food-receipts.json data/receipt-images
+          git add data/food-receipts.json data/receipt-images data/receipt-previews
           git diff --cached --quiet && exit 0
           git commit -m "chore: ingest feed receipt #${{ github.event.issue.number }}"
           git push origin main
