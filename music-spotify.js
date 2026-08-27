@@ -2,7 +2,6 @@
   if (!document.body.classList.contains('music-page') || typeof DetourData === 'undefined') return;
 
   const embedTrack = id => `https://open.spotify.com/embed/track/${encodeURIComponent(id)}?utm_source=generator&theme=0`;
-  const embedPlaylist = id => `https://open.spotify.com/embed/playlist/${encodeURIComponent(id)}?utm_source=generator&theme=0`;
   const ua = navigator.userAgent || '';
   const isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
@@ -62,48 +61,16 @@
     host.classList.add('has-spotify-embed');
   }
 
-  function mountPlaylist(host, playlist) {
-    if (!host || !playlist?.spotifyPlaylistId) return;
-    if (isIOS) {
-      host.remove();
-      return;
-    }
-    if (host.querySelector('iframe')) return;
-    const frame = document.createElement('iframe');
-    frame.src = embedPlaylist(playlist.spotifyPlaylistId);
-    frame.title = `${playlist.name || 'Spotify playlist'} playlist`;
-    frame.width = '100%';
-    frame.height = '352';
-    frame.setAttribute('frameborder', '0');
-    frame.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture');
-    frame.setAttribute('allowfullscreen', '');
-    frame.style.cssText = 'border:0;border-radius:18px;display:block';
-    host.append(frame);
-  }
-
   async function init() {
     const data = await DetourData.load('music');
     if (!data) return;
     const records = [...(data.records || [])].sort((a,b) => new Date(b.pickedAt || b.at) - new Date(a.pickedAt || a.at));
     const latest = records[0];
-    const playlist = data.playlist || null;
+    const library = data.library || null;
 
-    if (playlist?.url) {
-      ['#playlistLink', '#playlistExternal', '#detailPlaylist'].forEach(sel => {
-        const a = document.querySelector(sel);
-        if (!a) return;
-        a.href = playlist.url;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        a.classList.remove('is-disabled');
-        a.removeAttribute('aria-disabled');
-        a.hidden = false;
-      });
-    }
-
-    if (playlist?.name) {
+    if (library?.name) {
       const state = document.querySelector('#detailPlaylistState');
-      if (state) state.textContent = `已连接 · ${playlist.name}`;
+      if (state) state.textContent = `Detour · ${library.name}`;
     }
 
     const id = new URLSearchParams(location.search).get('id');
@@ -111,16 +78,6 @@
 
     ensureTrackEmbed(document.querySelector('#spotifySlot'), latest);
     ensureTrackEmbed(document.querySelector('#detailPlayer'), current);
-
-    const playlistPanel = document.querySelector('#playlist');
-    if (playlistPanel && playlist?.spotifyPlaylistId && !document.querySelector('#playlistSpotifyEmbed')) {
-      const wrap = document.createElement('div');
-      wrap.id = 'playlistSpotifyEmbed';
-      wrap.className = 'spotify-playlist-embed';
-      const external = document.querySelector('#playlistExternal');
-      playlistPanel.insertBefore(wrap, external || null);
-      mountPlaylist(wrap, playlist);
-    }
   }
 
   init();
