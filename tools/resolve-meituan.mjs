@@ -23,16 +23,37 @@ function decodeDeepLinkFromUrl(value) {
   return null;
 }
 
-function findDeepLink(text) {
-  const direct = String(text || '').match(/imeituan:\/\/[^\s"'<>]+/i)?.[0];
-  if (direct) return direct.replace(/&amp;/g, '&');
+function normalizeEmbeddedText(value) {
+  let text = String(value || '')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\\u003A/gi, ':')
+    .replace(/\\u002F/gi, '/')
+    .replace(/\\\//g, '/');
 
-  const encoded = String(text || '').match(/imeituan%3A%2F%2F[^\s"'<>]+/i)?.[0];
-  if (encoded) {
-    try {
-      return decodeURIComponent(encoded.replace(/&amp;/g, '&'));
-    } catch {}
+  try {
+    text = decodeURIComponent(text);
+  } catch {}
+
+  return text;
+}
+
+function findDeepLink(text) {
+  const candidates = [String(text || ''), normalizeEmbeddedText(text)];
+
+  for (const candidate of candidates) {
+    const direct = candidate.match(/imeituan:\/\/[^\s"'<>]+/i)?.[0];
+    if (direct) return direct.replace(/&amp;/g, '&');
+
+    const encoded = candidate.match(/imeituan%3A%2F%2F[^\s"'<>]+/i)?.[0];
+    if (encoded) {
+      try {
+        return decodeURIComponent(encoded.replace(/&amp;/g, '&'));
+      } catch {}
+    }
   }
+
   return null;
 }
 
@@ -111,11 +132,9 @@ try {
   body = await response.text();
 } catch {}
 
-let deepLink = decodeDeepLinkFromUrl(finalUrl) || findDeepLink(body);
-if (!deepLink) {
-  console.error(`could not resolve imeituan deep link; final URL: ${finalUrl}`);
-  process.exit(1);
-}
+const resolvedDeepLink = decodeDeepLinkFromUrl(finalUrl) || findDeepLink(body);
+const deepLink = resolvedDeepLink || finalUrl;
+const resolution = resolvedDeepLink ? 'imeituan' : 'web-fallback';
 
 const deepLinkData = parseDeepLink(deepLink);
 const metadata = {
@@ -129,11 +148,16 @@ const out = {
   shareUrl,
   finalUrl,
   deepLink,
+  resolution,
   deal: deepLinkData,
   metadata,
   imageCandidates,
   bodyBytes: Buffer.byteLength(body || '', 'utf8'),
   resolvedAt: new Date().toISOString()
 };
+
+if (!resolvedDeepLink) {
+  console.error(`imeituan deep link unavailable; using fresh web fallback: ${finalUrl}`);
+}
 
 console.log(JSON.stringify(out));
