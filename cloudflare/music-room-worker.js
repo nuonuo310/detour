@@ -44,11 +44,16 @@ const acceptancePage = `<!doctype html>
 <script>
 const songs={A:{provider:'mock',providerId:'song-a',key:'mock:song-a',title:'Song A',artist:'Detour',duration:300},B:{provider:'mock',providerId:'song-b',key:'mock:song-b',title:'Song B',artist:'Detour',duration:180}};
 const $=id=>document.getElementById(id);
-let ws=null,state=null,offset=0,timer=null;
+let ws=null,state=null,offset=0,timer=null,retryTimer=null,heartbeatTimer=null,watchdogTimer=null,connectionGeneration=0,shouldReconnect=false,lastServerMessageAt=0,retryCount=0;
 const projected=()=>{if(!state)return 0;const now=Date.now()+offset;const base=Number(state.position)||0;if(!state.playing)return base;const next=base+Math.max(0,now-Number(state.positionAt||now))/1000;return Math.min(next,Number(state.song?.duration)||next)};
 const render=()=>{if(!state)return;const pos=projected();$('song').textContent=state.song?state.song.title+' — '+state.song.artist:'No song';$('state').textContent=(state.playing?'Playing':'Paused')+' · '+pos.toFixed(1)+'s';$('revision').textContent='revision '+state.revision+' · updated by '+(state.updatedBy||'nobody');$('seek').max=String(state.song?.duration||300);$('seek').value=String(Math.min(pos,Number($('seek').max)))};
-const sendIntent=intent=>{if(ws?.readyState===1)ws.send(JSON.stringify({kind:'intent',intent:{...intent,clientId:$('client').value}}))};
-const connect=()=>{clearInterval(timer);ws?.close();const room=$('room').value.trim()||'ours';const scheme=location.protocol==='https:'?'wss:':'ws:';ws=new WebSocket(scheme+'//'+location.host+'/music-room/'+encodeURIComponent(room));$('connection').textContent='连接中…';ws.addEventListener('open',()=>{ $('connection').textContent='已连接';ws.send(JSON.stringify({kind:'hello',clientId:$('client').value}))});ws.addEventListener('message',event=>{try{const message=JSON.parse(event.data);if(message.kind!=='snapshot')return;if(Number.isFinite(Number(message.serverNow)))offset=Number(message.serverNow)-Date.now();state=message.state;render()}catch{}});ws.addEventListener('close',()=>{$('connection').textContent='已断开'});timer=setInterval(render,250)};
+const sendJson=message=>{if(ws?.readyState===1){ws.send(JSON.stringify(message));return true}return false};
+const sendIntent=intent=>sendJson({kind:'intent',intent:{...intent,clientId:$('client').value}});
+const clearConnectionTimers=()=>{clearTimeout(retryTimer);clearInterval(heartbeatTimer);clearInterval(watchdogTimer);retryTimer=null;heartbeatTimer=null;watchdogTimer=null};
+const startHeartbeat=()=>{clearInterval(heartbeatTimer);clearInterval(watchdogTimer);heartbeatTimer=setInterval(()=>sendJson({kind:'ping',clientId:$('client').value}),15000);watchdogTimer=setInterval(()=>{if(ws?.readyState===1&&Date.now()-lastServerMessageAt>35000)ws.close(4000,'heartbeat timeout')},5000)};
+const scheduleReconnect=generation=>{if(!shouldReconnect||generation!==connectionGeneration||retryTimer)return;retryCount+=1;const delay=Math.min(5000,750*Math.pow(1.6,retryCount-1));$('connection').textContent='重连中…';retryTimer=setTimeout(()=>{retryTimer=null;if(shouldReconnect&&generation===connectionGeneration)openSocket(generation)},delay)};
+const openSocket=generation=>{const room=$('room').value.trim()||'ours';const scheme=location.protocol==='https:'?'wss:':'ws:';const socket=new WebSocket(scheme+'//'+location.host+'/music-room/'+encodeURIComponent(room));ws=socket;$('connection').textContent=retryCount?'正在重连…':'连接中…';socket.addEventListener('open',()=>{if(generation!==connectionGeneration){socket.close();return}retryCount=0;lastServerMessageAt=Date.now();$('connection').textContent='已连接';sendJson({kind:'hello',clientId:$('client').value});startHeartbeat()});socket.addEventListener('message',event=>{if(generation!==connectionGeneration)return;lastServerMessageAt=Date.now();try{const message=JSON.parse(event.data);if(message.kind==='pong'){if(Number.isFinite(Number(message.serverNow)))offset=Number(message.serverNow)-Date.now();return}if(message.kind!=='snapshot')return;if(Number.isFinite(Number(message.serverNow)))offset=Number(message.serverNow)-Date.now();state=message.state;render()}catch{}});socket.addEventListener('close',()=>{if(generation!==connectionGeneration)return;clearInterval(heartbeatTimer);clearInterval(watchdogTimer);heartbeatTimer=null;watchdogTimer=null;if(shouldReconnect)scheduleReconnect(generation);else $('connection').textContent='已断开'});socket.addEventListener('error',()=>{if(generation===connectionGeneration)$('connection').textContent='连接异常，准备重连…'})};
+const connect=()=>{connectionGeneration+=1;const generation=connectionGeneration;shouldReconnect=true;retryCount=0;clearConnectionTimers();if(ws&&ws.readyState<2)ws.close(1000,'reconnect requested');openSocket(generation);clearInterval(timer);timer=setInterval(render,250)};
 $('connect').onclick=connect;$('songA').onclick=()=>sendIntent({type:'song',song:songs.A,playing:true});$('songB').onclick=()=>sendIntent({type:'song',song:songs.B,playing:true});$('play').onclick=()=>sendIntent({type:'play'});$('pause').onclick=()=>sendIntent({type:'pause'});$('seekButton').onclick=()=>sendIntent({type:'seek',position:Number($('seek').value)});
 </script>
 </body>
@@ -108,14 +113,19 @@ export class MusicRoom extends DurableObject {
     const message = parseMessage(rawMessage);
     if (!message) return;
 
+    if (message.kind === 'ping') {
+      ws.send(JSON.stringify({ kind: 'pong', serverNow: Date.now() }));
+      return;
+    }
+
     const changed = this.endpoint.handle(message);
     if (changed && message.kind === 'intent') {
       await this.ctx.storage.put(STATE_KEY, this.endpoint.getState());
     }
   }
 
-  webSocketClose(ws, code, reason) {
-    ws.close(code, reason);
+  webSocketClose() {
+    // Cloudflare already closed the socket; nothing else to do here.
   }
 
   broadcast(message) {
