@@ -12,6 +12,48 @@ const parseMessage = message => {
   }
 };
 
+const acceptancePage = `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Detour · 一起听云端验收</title>
+  <style>
+    body{font:16px/1.5 system-ui,sans-serif;max-width:720px;margin:32px auto;padding:0 18px}button,input,select{font:inherit}button{padding:8px 12px;margin:4px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.card{border:1px solid #ccc;border-radius:12px;padding:16px;margin:16px 0}.muted{opacity:.65;font-size:14px}input[type=range]{width:min(320px,70vw)}
+  </style>
+</head>
+<body>
+  <h1>一起听 · 云端验收</h1>
+  <p class="muted">电脑和手机打开这个页面，使用同一个房间名、不同客户端，然后在任意一边操作。</p>
+  <div class="row">
+    <label>房间 <input id="room" value="ours"></label>
+    <label>客户端 <select id="client"><option value="shenshu">Shenshu</option><option value="nuonuo">Nuonuo</option></select></label>
+    <button id="connect">连接</button>
+  </div>
+  <div class="card">
+    <div id="connection">未连接</div>
+    <div id="song">No song</div>
+    <div id="state">Paused · 0.0s</div>
+    <div id="revision" class="muted">revision 0</div>
+  </div>
+  <div class="row">
+    <button id="songA">Song A</button><button id="songB">Song B</button>
+    <button id="play">播放</button><button id="pause">暂停</button>
+  </div>
+  <div class="row"><input id="seek" type="range" min="0" max="300" value="0" step="1"><button id="seekButton">拖到这里</button></div>
+<script>
+const songs={A:{provider:'mock',providerId:'song-a',key:'mock:song-a',title:'Song A',artist:'Detour',duration:300},B:{provider:'mock',providerId:'song-b',key:'mock:song-b',title:'Song B',artist:'Detour',duration:180}};
+const $=id=>document.getElementById(id);
+let ws=null,state=null,offset=0,timer=null;
+const projected=()=>{if(!state)return 0;const now=Date.now()+offset;const base=Number(state.position)||0;if(!state.playing)return base;const next=base+Math.max(0,now-Number(state.positionAt||now))/1000;return Math.min(next,Number(state.song?.duration)||next)};
+const render=()=>{if(!state)return;const pos=projected();$('song').textContent=state.song?state.song.title+' — '+state.song.artist:'No song';$('state').textContent=(state.playing?'Playing':'Paused')+' · '+pos.toFixed(1)+'s';$('revision').textContent='revision '+state.revision+' · updated by '+(state.updatedBy||'nobody');$('seek').max=String(state.song?.duration||300);$('seek').value=String(Math.min(pos,Number($('seek').max)))};
+const sendIntent=intent=>{if(ws?.readyState===1)ws.send(JSON.stringify({kind:'intent',intent:{...intent,clientId:$('client').value}}))};
+const connect=()=>{clearInterval(timer);ws?.close();const room=$('room').value.trim()||'ours';const scheme=location.protocol==='https:'?'wss:':'ws:';ws=new WebSocket(scheme+'//'+location.host+'/music-room/'+encodeURIComponent(room));$('connection').textContent='连接中…';ws.addEventListener('open',()=>{ $('connection').textContent='已连接';ws.send(JSON.stringify({kind:'hello',clientId:$('client').value}))});ws.addEventListener('message',event=>{try{const message=JSON.parse(event.data);if(message.kind!=='snapshot')return;if(Number.isFinite(Number(message.serverNow)))offset=Number(message.serverNow)-Date.now();state=message.state;render()}catch{}});ws.addEventListener('close',()=>{$('connection').textContent='已断开'});timer=setInterval(render,250)};
+$('connect').onclick=connect;$('songA').onclick=()=>sendIntent({type:'song',song:songs.A,playing:true});$('songB').onclick=()=>sendIntent({type:'song',song:songs.B,playing:true});$('play').onclick=()=>sendIntent({type:'play'});$('pause').onclick=()=>sendIntent({type:'pause'});$('seekButton').onclick=()=>sendIntent({type:'seek',position:Number($('seek').value)});
+</script>
+</body>
+</html>`;
+
 export class MusicRoom extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
@@ -85,6 +127,10 @@ export class MusicRoom extends DurableObject {
 export default {
   fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === '/music-room-demo') {
+      return new Response(acceptancePage, { headers: { 'content-type': 'text/html; charset=utf-8' } });
+    }
+
     const match = url.pathname.match(/^\/music-room\/([^/]+)$/);
     if (!match) return new Response('Not found', { status: 404 });
     if (request.headers.get('Upgrade') !== 'websocket') {
