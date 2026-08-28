@@ -1,12 +1,12 @@
 import { createRoomAuthority } from './music-room-sync.js';
 
-export function createRoomAuthorityEndpoint({ roomId, authorityId = 'room-service', initialState, publish, now }) {
+export function createRoomAuthorityEndpoint({ roomId, authorityId = 'room-service', initialState, publish, now = () => Date.now() }) {
   if (typeof publish !== 'function') throw new Error('publish is required');
   const authority = createRoomAuthority({ roomId, authorityId, initialState, now });
 
   const publishSnapshot = () => {
     const state = authority.getState();
-    publish({ kind: 'snapshot', state });
+    publish({ kind: 'snapshot', state, serverNow: now() });
     return state;
   };
 
