@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   applyAuthorityIntent,
+  createRoomAuthority,
   createRoomState,
   normalizeSong,
   projectedPosition,
@@ -47,6 +48,34 @@ assert.deepEqual(normalizeSong({ title: 'Same Song', artist: 'Same Artist' }).ke
 assert.throws(
   () => applyAuthorityIntent(state, { type: 'pause' }, { authorityId: 'intruder', now: 20_000 }),
   /only the room authority/
+);
+
+let clock = 30_000;
+const authority = createRoomAuthority({ roomId: 'service-ready', authorityId: 'room-service', now: () => clock });
+assert.equal(authority.getState().revision, 0);
+let result = authority.applyIntent({
+  type: 'song',
+  clientId: 'nuonuo',
+  song: { provider: 'mock', providerId: 'service-song', title: 'Service Song', artist: 'Detour', duration: 120 },
+  position: 10,
+  playing: true
+});
+assert.equal(result.changed, true);
+assert.equal(result.state.authorityId, 'room-service');
+assert.equal(result.state.updatedBy, 'nuonuo');
+assert.equal(result.state.position, 10);
+clock += 5_000;
+assert.equal(authority.getPosition(), 15);
+result = authority.applyIntent({ type: 'unknown', clientId: 'nuonuo' });
+assert.equal(result.changed, false);
+assert.equal(authority.getState().revision, 1);
+assert.throws(
+  () => createRoomAuthority({
+    roomId: 'service-ready',
+    authorityId: 'room-service',
+    initialState: createRoomState({ roomId: 'other-room', authorityId: 'room-service', now: clock })
+  }),
+  /roomId mismatch/
 );
 
 console.log('music room sync tests passed');
