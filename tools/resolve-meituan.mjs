@@ -113,6 +113,45 @@ function extractImageCandidates(html) {
   return [...found].slice(0, 20);
 }
 
+function firstBodyValue(html, keys) {
+  const text = normalizeEmbeddedText(html);
+  for (const key of keys) {
+    const patterns = [
+      new RegExp(`["']${key}["']\\s*[:=]\\s*["']?([A-Za-z0-9_-]{3,})`, 'i'),
+      new RegExp(`${key}=([A-Za-z0-9_-]{3,})`, 'i')
+    ];
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match?.[1]) return match[1];
+    }
+  }
+  return null;
+}
+
+function parseWaimaiContext(finalUrl, html) {
+  try {
+    const u = new URL(finalUrl);
+    if (!/h5\.waimai\.meituan\.com$/i.test(u.host)) return null;
+
+    const utmTerm = u.searchParams.get('utm_term');
+    const foodDetailToken = utmTerm?.match(/food-detailG([^&]+)/i)?.[1] || null;
+    const poiIdStr = u.searchParams.get('poi_id_str') || firstBodyValue(html, ['poi_id_str', 'poiIdStr']);
+
+    return {
+      kind: 'waimai-menu',
+      poiIdStr,
+      shareSource: u.searchParams.get('utm_sharesource') || u.searchParams.get('utm_source') || null,
+      foodDetailToken,
+      spuId: firstBodyValue(html, ['spuId', 'spu_id', 'foodSpuId']),
+      skuId: firstBodyValue(html, ['skuId', 'sku_id', 'foodSkuId']),
+      productId: firstBodyValue(html, ['productId', 'product_id', 'foodId']),
+      note: 'Waimai menu shares are not Meituan deal pages; deal did/poiid/poiIdEncrypt may be absent.'
+    };
+  } catch {
+    return null;
+  }
+}
+
 let response;
 try {
   response = await fetch(shareUrl, {
@@ -133,8 +172,9 @@ try {
 } catch {}
 
 const resolvedDeepLink = decodeDeepLinkFromUrl(finalUrl) || findDeepLink(body);
+const waimai = parseWaimaiContext(finalUrl, body);
 const deepLink = resolvedDeepLink || finalUrl;
-const resolution = resolvedDeepLink ? 'imeituan' : 'web-fallback';
+const resolution = resolvedDeepLink ? 'imeituan-deal' : waimai ? 'waimai-menu' : 'web-fallback';
 
 const deepLinkData = parseDeepLink(deepLink);
 const metadata = {
@@ -150,6 +190,7 @@ const out = {
   deepLink,
   resolution,
   deal: deepLinkData,
+  waimai,
   metadata,
   imageCandidates,
   bodyBytes: Buffer.byteLength(body || '', 'utf8'),
@@ -157,7 +198,11 @@ const out = {
 };
 
 if (!resolvedDeepLink) {
-  console.error(`imeituan deep link unavailable; using fresh web fallback: ${finalUrl}`);
+  console.error(
+    waimai
+      ? `waimai menu share detected; preserving fresh menu URL and product hints: ${finalUrl}`
+      : `imeituan deep link unavailable; using fresh web fallback: ${finalUrl}`
+  );
 }
 
 console.log(JSON.stringify(out));
