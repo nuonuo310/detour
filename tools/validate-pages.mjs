@@ -5,7 +5,7 @@ import path from 'node:path';
 import process from 'node:process';
 
 const root = path.resolve(import.meta.dirname, '..');
-const pages = ['index.html', 'music.html', 'food.html', 'wild.html', 'date.html'];
+const pages = ['index.html', 'music.html', 'food.html', 'wild.html', 'date.html', 'music-room-demo.html'];
 let errors = 0;
 
 const fail = message => {
