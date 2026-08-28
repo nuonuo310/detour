@@ -2,7 +2,7 @@
   "shareUrl": "http://dpurl.cn/iwNVdrPz",
   "finalUrl": "https://h5.waimai.meituan.com/waimai/mindex/menu?poi_id_str=UVsu790LNzFzq5VTATJnnwI&utm_source=5913&channel=appshare1&utm_term=AiphoneBgroupC12.64.401DcopyEwm-food-detailG0000000000000152854CF02F64A829565C5D74DFDAF16A16655384881282690020260828181847425&utm_source=appshare&utm_medium=iOSweb&utm_fromapp=copy&utm_sharesource=wm-food-detail&lch=appshare_185d41d4d4157704A5",
   "deepLink": "https://h5.waimai.meituan.com/waimai/mindex/menu?poi_id_str=UVsu790LNzFzq5VTATJnnwI&utm_source=5913&channel=appshare1&utm_term=AiphoneBgroupC12.64.401DcopyEwm-food-detailG0000000000000152854CF02F64A829565C5D74DFDAF16A16655384881282690020260828181847425&utm_source=appshare&utm_medium=iOSweb&utm_fromapp=copy&utm_sharesource=wm-food-detail&lch=appshare_185d41d4d4157704A5",
-  "resolution": "web-fallback",
+  "resolution": "waimai-menu",
   "deal": {
     "scheme": "https",
     "host": "h5.waimai.meituan.com",
@@ -11,6 +11,16 @@
     "poiid": null,
     "poiIdEncrypt": null
   },
+  "waimai": {
+    "kind": "waimai-menu",
+    "poiIdStr": "UVsu790LNzFzq5VTATJnnwI",
+    "shareSource": "wm-food-detail",
+    "foodDetailToken": "0000000000000152854CF02F64A829565C5D74DFDAF16A16655384881282690020260828181847425",
+    "spuId": null,
+    "skuId": null,
+    "productId": null,
+    "note": "Waimai menu shares are not Meituan deal pages; deal did/poiid/poiIdEncrypt may be absent."
+  },
   "metadata": {
     "title": null,
     "description": null,
@@ -18,6 +28,6 @@
   },
   "imageCandidates": [],
   "bodyBytes": 55467,
-  "resolvedAt": "2026-08-28T10:38:36.708Z",
+  "resolvedAt": "2026-08-28T11:24:27.917Z",
   "requestId": "food-live"
 }
