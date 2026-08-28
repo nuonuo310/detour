@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createBroadcastRoom, projectedPosition } from '../music-room-sync.js';
+import { createBroadcastRoom, createRoomState, normalizeSong, projectedPosition } from '../music-room-sync.js';
 import { createMockPlayer } from '../music-room-mock-player.js';
 
 function createMemoryBus() {
@@ -27,9 +27,43 @@ function createMemoryBus() {
   };
 }
 
+const authorityId = 'shenshu';
+
+{
+  const joinBus = createMemoryBus();
+  const roomId = 'revision-zero-join';
+  const initialState = {
+    ...createRoomState({ roomId, authorityId, now: 1_000 }),
+    song: normalizeSong({ provider: 'mock', providerId: 'seed', title: 'Seed Song', artist: 'Detour', duration: 120 }),
+    playing: false,
+    position: 17
+  };
+
+  const authorityRoom = createBroadcastRoom({
+    roomId,
+    clientId: authorityId,
+    authorityId,
+    initialState,
+    channelFactory: joinBus.channelFactory
+  });
+  const joiningRoom = createBroadcastRoom({
+    roomId,
+    clientId: 'nuonuo',
+    authorityId,
+    channelFactory: joinBus.channelFactory
+  });
+
+  assert.equal(authorityRoom.getState().revision, 0);
+  assert.equal(joiningRoom.getState().revision, 0);
+  assert.equal(joiningRoom.getState().song.key, 'mock:seed');
+  assert.equal(joiningRoom.getState().position, 17);
+
+  authorityRoom.close();
+  joiningRoom.close();
+}
+
 const bus = createMemoryBus();
 const roomId = 'together-live';
-const authorityId = 'shenshu';
 const shenshuPlayer = createMockPlayer({ id: 'shenshu-player' });
 const nuonuoPlayer = createMockPlayer({ id: 'nuonuo-player' });
 
