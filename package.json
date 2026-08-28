@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tools/test-events.mjs && node tools/test-date-mutations.mjs && node tools/test-music-room-sync.mjs && node tools/test-music-room-two-clients.mjs && node tools/test-music-player-adapter.mjs && node tools/test-music-room-authority-endpoint.mjs && node tools/test-music-room-client-service.mjs && node tools/test-music-room-broadcast-transport.mjs && node tools/test-music-room-websocket-client.mjs && node tools/test-music-room-player-client.mjs && node tools/validate-data.mjs && node tools/validate-pages.mjs",
+    "test": "node tools/test-events.mjs && node tools/test-date-mutations.mjs && node tools/test-music-room-sync.mjs && node tools/test-music-room-two-clients.mjs && node tools/test-music-player-adapter.mjs && node tools/test-music-room-authority-endpoint.mjs && node tools/test-music-room-client-service.mjs && node tools/test-music-room-broadcast-transport.mjs && node tools/test-music-room-websocket-client.mjs && node tools/test-music-room-player-client.mjs && node tools/test-music-room-clock-alignment.mjs && node tools/validate-data.mjs && node tools/validate-pages.mjs",
     "test:events": "node tools/test-events.mjs",
     "test:dates": "node tools/test-date-mutations.mjs",
-    "test:music-room": "node tools/test-music-room-sync.mjs && node tools/test-music-room-two-clients.mjs && node tools/test-music-player-adapter.mjs && node tools/test-music-room-authority-endpoint.mjs && node tools/test-music-room-client-service.mjs && node tools/test-music-room-broadcast-transport.mjs && node tools/test-music-room-websocket-client.mjs && node tools/test-music-room-player-client.mjs",
+    "test:music-room": "node tools/test-music-room-sync.mjs && node tools/test-music-room-two-clients.mjs && node tools/test-music-player-adapter.mjs && node tools/test-music-room-authority-endpoint.mjs && node tools/test-music-room-client-service.mjs && node tools/test-music-room-broadcast-transport.mjs && node tools/test-music-room-websocket-client.mjs && node tools/test-music-room-player-client.mjs && node tools/test-music-room-clock-alignment.mjs",
     "validate:data": "node tools/validate-data.mjs",
     "validate:pages": "node tools/validate-pages.mjs"
   }
