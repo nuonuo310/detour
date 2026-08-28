@@ -77,10 +77,15 @@ export function applyAuthorityIntent(state, intent, { authorityId, now = Date.no
   }
 }
 
+const matchesRoomAuthority = (local, incoming) => Boolean(
+  local && incoming &&
+  incoming.roomId === local.roomId &&
+  incoming.authorityId === local.authorityId
+);
+
 export function shouldAcceptSnapshot(local, incoming) {
   if (!incoming || !local) return Boolean(incoming);
-  if (incoming.roomId !== local.roomId) return false;
-  if (incoming.authorityId !== local.authorityId) return false;
+  if (!matchesRoomAuthority(local, incoming)) return false;
   return Number(incoming.revision) > Number(local.revision);
 }
 
@@ -89,11 +94,17 @@ export function createBroadcastRoom({ roomId, clientId, authorityId, initialStat
   const channel = makeChannel(`detour:music-room:${roomId}`);
   let state = initialState || createRoomState({ roomId, authorityId });
   const isAuthority = clientId === authorityId;
+  let hasCanonicalSnapshot = isAuthority;
 
   const publishState = () => channel.postMessage({ kind: 'snapshot', state });
   const adopt = incoming => {
-    if (shouldAcceptSnapshot(state, incoming)) {
+    const firstCanonicalSnapshot = !hasCanonicalSnapshot &&
+      matchesRoomAuthority(state, incoming) &&
+      Number(incoming.revision) >= Number(state.revision);
+
+    if (firstCanonicalSnapshot || shouldAcceptSnapshot(state, incoming)) {
       state = incoming;
+      hasCanonicalSnapshot = true;
       onState?.(state, 'remote');
     }
   };
