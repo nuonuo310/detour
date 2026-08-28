@@ -52,7 +52,7 @@ const sendIntent=intent=>sendJson({kind:'intent',intent:{...intent,clientId:$('c
 const clearConnectionTimers=()=>{clearTimeout(retryTimer);clearInterval(heartbeatTimer);clearInterval(watchdogTimer);retryTimer=null;heartbeatTimer=null;watchdogTimer=null};
 const startHeartbeat=()=>{clearInterval(heartbeatTimer);clearInterval(watchdogTimer);heartbeatTimer=setInterval(()=>sendJson({kind:'ping',clientId:$('client').value}),15000);watchdogTimer=setInterval(()=>{if(ws?.readyState===1&&Date.now()-lastServerMessageAt>35000)ws.close(4000,'heartbeat timeout')},5000)};
 const scheduleReconnect=generation=>{if(!shouldReconnect||generation!==connectionGeneration||retryTimer)return;retryCount+=1;const delay=Math.min(5000,750*Math.pow(1.6,retryCount-1));$('connection').textContent='重连中…';retryTimer=setTimeout(()=>{retryTimer=null;if(shouldReconnect&&generation===connectionGeneration)openSocket(generation)},delay)};
-const openSocket=generation=>{const room=$('room').value.trim()||'ours';const scheme=location.protocol==='https:'?'wss:':'ws:';const socket=new WebSocket(scheme+'//'+location.host+'/music-room/'+encodeURIComponent(room));ws=socket;$('connection').textContent=retryCount?'正在重连…':'连接中…';socket.addEventListener('open',()=>{if(generation!==connectionGeneration){socket.close();return}retryCount=0;lastServerMessageAt=Date.now();$('connection').textContent='已连接';sendJson({kind:'hello',clientId:$('client').value});startHeartbeat()});socket.addEventListener('message',event=>{if(generation!==connectionGeneration)return;lastServerMessageAt=Date.now();try{const message=JSON.parse(event.data);if(message.kind==='pong'){if(Number.isFinite(Number(message.serverNow)))offset=Number(message.serverNow)-Date.now();return}if(message.kind!=='snapshot')return;if(Number.isFinite(Number(message.serverNow)))offset=Number(message.serverNow)-Date.now();state=message.state;render()}catch{}});socket.addEventListener('close',()=>{if(generation!==connectionGeneration)return;clearInterval(heartbeatTimer);clearInterval(watchdogTimer);heartbeatTimer=null;watchdogTimer=null;if(shouldReconnect)scheduleReconnect(generation);else $('connection').textContent='已断开'});socket.addEventListener('error',()=>{if(generation===connectionGeneration)$('connection').textContent='连接异常，准备重连…'})};
+const openSocket=generation=>{const room=$('room').value.trim()||'ours';const scheme=location.protocol==='https:'?'wss:':'ws:';const socket=new WebSocket(scheme+'//'+location.host+'/music-room/'+encodeURIComponent(room));ws=socket;$('connection').textContent=retryCount?'正在重连…':'连接中…';socket.addEventListener('open',()=>{if(generation!==connectionGeneration){socket.close();return}retryCount=0;lastServerMessageAt=Date.now();$('connection').textContent='已连接';sendJson({kind:'hello',clientId:$('client').value});startHeartbeat()});socket.addEventListener('message',event=>{if(generation!==connectionGeneration)return;lastServerMessageAt=Date.now();try{const message=JSON.parse(event.data);if(message.kind==='pong'){if(Number.isFinite(Number(message.serverNow)))offset=Number(message.serverNow)-Date.now();return}if(message.kind!=='snapshot')return;if(Number.isFinite(Number(message.serverNow)))offset=Number(message.serverNow)-Date.now();state=message.state;render()}catch{}});socket.addEventListener('close',event=>{if(generation!==connectionGeneration)return;clearInterval(heartbeatTimer);clearInterval(watchdogTimer);heartbeatTimer=null;watchdogTimer=null;if(shouldReconnect){$('connection').textContent='重连中… ('+event.code+')';scheduleReconnect(generation)}else $('connection').textContent='已断开'});socket.addEventListener('error',()=>{if(generation===connectionGeneration)$('connection').textContent='连接异常，准备重连…'})};
 const connect=()=>{connectionGeneration+=1;const generation=connectionGeneration;shouldReconnect=true;retryCount=0;clearConnectionTimers();if(ws&&ws.readyState<2)ws.close(1000,'reconnect requested');openSocket(generation);clearInterval(timer);timer=setInterval(render,250)};
 $('connect').onclick=connect;$('songA').onclick=()=>sendIntent({type:'song',song:songs.A,playing:true});$('songB').onclick=()=>sendIntent({type:'song',song:songs.B,playing:true});$('play').onclick=()=>sendIntent({type:'play'});$('pause').onclick=()=>sendIntent({type:'pause'});$('seekButton').onclick=()=>sendIntent({type:'seek',position:Number($('seek').value)});
 </script>
@@ -114,7 +114,11 @@ export class MusicRoom extends DurableObject {
     if (!message) return;
 
     if (message.kind === 'ping') {
-      ws.send(JSON.stringify({ kind: 'pong', serverNow: Date.now() }));
+      try {
+        ws.send(JSON.stringify({ kind: 'pong', serverNow: Date.now() }));
+      } catch {
+        // The client may have disappeared between delivery and reply.
+      }
       return;
     }
 
@@ -130,7 +134,13 @@ export class MusicRoom extends DurableObject {
 
   broadcast(message) {
     const payload = JSON.stringify(message);
-    for (const socket of this.ctx.getWebSockets()) socket.send(payload);
+    for (const socket of this.ctx.getWebSockets()) {
+      try {
+        if (socket.readyState === 1) socket.send(payload);
+      } catch {
+        // A stale socket must not interrupt delivery to healthy participants.
+      }
+    }
   }
 }
 
