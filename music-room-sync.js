@@ -77,6 +77,23 @@ export function applyAuthorityIntent(state, intent, { authorityId, now = Date.no
   }
 }
 
+export function createRoomAuthority({ roomId, authorityId, initialState, now = () => Date.now() }) {
+  let state = initialState || createRoomState({ roomId, authorityId, now: now() });
+  if (state.roomId !== roomId) throw new Error('initialState roomId mismatch');
+  if (state.authorityId !== authorityId) throw new Error('initialState authorityId mismatch');
+
+  return {
+    getState: () => state,
+    getPosition: (at = now()) => projectedPosition(state, at),
+    applyIntent(intent) {
+      const next = applyAuthorityIntent(state, intent, { authorityId, now: now() });
+      const changed = next !== state;
+      state = next;
+      return { state, changed };
+    }
+  };
+}
+
 const matchesRoomAuthority = (local, incoming) => Boolean(
   local && incoming &&
   incoming.roomId === local.roomId &&
@@ -92,11 +109,19 @@ export function shouldAcceptSnapshot(local, incoming) {
 export function createBroadcastRoom({ roomId, clientId, authorityId, initialState, onState, channelFactory }) {
   const makeChannel = channelFactory || (name => new BroadcastChannel(name));
   const channel = makeChannel(`detour:music-room:${roomId}`);
-  let state = initialState || createRoomState({ roomId, authorityId });
   const isAuthority = clientId === authorityId;
+  const authority = isAuthority ? createRoomAuthority({ roomId, authorityId, initialState }) : null;
+  let state = authority?.getState() || initialState || createRoomState({ roomId, authorityId });
   let hasCanonicalSnapshot = isAuthority;
 
-  const publishState = () => channel.postMessage({ kind: 'snapshot', state });
+  const publishState = () => channel.postMessage({ kind: 'snapshot', state: authority.getState() });
+  const commitIntent = intent => {
+    const result = authority.applyIntent(intent);
+    if (!result.changed) return;
+    state = result.state;
+    onState?.(state, 'authority');
+    publishState();
+  };
   const adopt = incoming => {
     const firstCanonicalSnapshot = !hasCanonicalSnapshot &&
       matchesRoomAuthority(state, incoming) &&
@@ -116,9 +141,7 @@ export function createBroadcastRoom({ roomId, clientId, authorityId, initialStat
       return;
     }
     if (message.kind === 'intent' && isAuthority) {
-      state = applyAuthorityIntent(state, message.intent, { authorityId });
-      onState?.(state, 'authority');
-      publishState();
+      commitIntent(message.intent);
       return;
     }
     if (message.kind === 'snapshot') adopt(message.state);
@@ -126,13 +149,8 @@ export function createBroadcastRoom({ roomId, clientId, authorityId, initialStat
 
   const send = intent => {
     const normalized = { ...intent, clientId };
-    if (isAuthority) {
-      state = applyAuthorityIntent(state, normalized, { authorityId });
-      onState?.(state, 'authority');
-      publishState();
-    } else {
-      channel.postMessage({ kind: 'intent', intent: normalized });
-    }
+    if (isAuthority) commitIntent(normalized);
+    else channel.postMessage({ kind: 'intent', intent: normalized });
   };
 
   channel.postMessage({ kind: 'hello', clientId });
