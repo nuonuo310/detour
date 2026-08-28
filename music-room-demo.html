@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Detour · Together Listening Demo</title>
+  <style>
+    body{font:16px/1.5 system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px}button,input{font:inherit}button{margin:4px;padding:8px 12px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.status{padding:16px;border:1px solid #ccc;border-radius:12px;margin:16px 0}.muted{opacity:.65;font-size:14px}input[type=range]{width:280px}
+  </style>
+</head>
+<body>
+  <h1>Together Listening · Mock Demo</h1>
+  <p class="muted">Open this page in two tabs. Choose different clients, then control either side.</p>
+  <div class="row">
+    <label>Client <select id="client"><option value="shenshu">Shenshu</option><option value="nuonuo">Nuonuo</option></select></label>
+    <button id="reconnect">Reconnect</button>
+  </div>
+  <div class="status">
+    <div id="song">No song</div>
+    <div id="state">Paused · 0.0s</div>
+    <div id="revision" class="muted">revision 0</div>
+  </div>
+  <div class="row">
+    <button id="songA">Song A</button><button id="songB">Song B</button>
+    <button id="play">Play</button><button id="pause">Pause</button>
+  </div>
+  <div class="row"><input id="seek" type="range" min="0" max="300" value="0" step="1"><button id="seekButton">Seek</button></div>
+  <script type="module" src="music-room-demo.js"></script>
+</body>
+</html>
