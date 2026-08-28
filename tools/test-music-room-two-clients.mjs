@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createBroadcastRoom } from '../music-room-sync.js';
+import { createBroadcastRoom, projectedPosition } from '../music-room-sync.js';
 import { createMockPlayer } from '../music-room-mock-player.js';
 
 function createMemoryBus() {
@@ -41,18 +41,18 @@ shenshuRoom = createBroadcastRoom({
   clientId: authorityId,
   authorityId,
   channelFactory: bus.channelFactory,
-  onState: state => shenshuPlayer.applyRoomState(state, () => shenshuRoom.getPosition())
+  onState: state => shenshuPlayer.applyRoomState(state, projectedPosition(state))
 });
-shenshuPlayer.applyRoomState(shenshuRoom.getState(), () => shenshuRoom.getPosition());
+shenshuPlayer.applyRoomState(shenshuRoom.getState(), projectedPosition(shenshuRoom.getState()));
 
 nuonuoRoom = createBroadcastRoom({
   roomId,
   clientId: 'nuonuo',
   authorityId,
   channelFactory: bus.channelFactory,
-  onState: state => nuonuoPlayer.applyRoomState(state, () => nuonuoRoom.getPosition())
+  onState: state => nuonuoPlayer.applyRoomState(state, projectedPosition(state))
 });
-nuonuoPlayer.applyRoomState(nuonuoRoom.getState(), () => nuonuoRoom.getPosition());
+nuonuoPlayer.applyRoomState(nuonuoRoom.getState(), projectedPosition(nuonuoRoom.getState()));
 
 const songA = { provider: 'mock', providerId: 'song-a', title: 'Song A', artist: 'Detour', duration: 300 };
 const songB = { provider: 'mock', providerId: 'song-b', title: 'Song B', artist: 'Detour', duration: 180 };
@@ -88,15 +88,14 @@ assert.equal(nuonuoPlayer.getState().playing, false);
 
 nuonuoRoom.close();
 const reconnectedPlayer = createMockPlayer({ id: 'nuonuo-reconnected' });
-let reconnectedRoom;
-reconnectedRoom = createBroadcastRoom({
+const reconnectedRoom = createBroadcastRoom({
   roomId,
   clientId: 'nuonuo',
   authorityId,
   channelFactory: bus.channelFactory,
-  onState: state => reconnectedPlayer.applyRoomState(state, () => reconnectedRoom.getPosition())
+  onState: state => reconnectedPlayer.applyRoomState(state, projectedPosition(state))
 });
-reconnectedPlayer.applyRoomState(reconnectedRoom.getState(), () => reconnectedRoom.getPosition());
+reconnectedPlayer.applyRoomState(reconnectedRoom.getState(), projectedPosition(reconnectedRoom.getState()));
 
 assert.equal(reconnectedRoom.getState().revision, shenshuRoom.getState().revision);
 assert.equal(reconnectedPlayer.getState().song.key, 'mock:song-b');
