@@ -1,5 +1,6 @@
 import { createBroadcastRoom } from './music-room-sync.js';
 import { createMockPlayer } from './music-room-mock-player.js';
+import { applyPlayerSync } from './music-room-player-adapter.js';
 
 const roomId = 'detour-together-demo';
 const authorityId = 'shenshu';
@@ -17,10 +18,10 @@ function render() {
   if (!room || !player) return;
   const state = room.getState();
   const currentTime = room.getPosition();
-  player.applyRoomState(state, currentTime);
+  applyPlayerSync(player, state, currentTime);
   const p = player.getState();
   $('song').textContent = p.song ? `${p.song.title} — ${p.song.artist}` : 'No song';
-  $('state').textContent = `${p.playing ? 'Playing' : 'Paused'} · ${p.currentTime.toFixed(1)}s`;
+  $('state').textContent = `${p.playing ? 'Playing' : 'Paused'} · ${currentTime.toFixed(1)}s`;
   $('revision').textContent = `revision ${state.revision} · updated by ${state.updatedBy}`;
   $('seek').max = String(p.song?.duration || 300);
   $('seek').value = String(Math.min(currentTime, Number($('seek').max)));
