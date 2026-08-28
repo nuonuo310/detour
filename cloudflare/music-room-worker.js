@@ -50,6 +50,7 @@ export class MusicRoom extends DurableObject {
         authorityId: 'room-service',
         publish: message => this.broadcast(message)
       });
+      await this.ctx.storage.put(STATE_KEY, this.endpoint.getState());
     } else if (roomId !== this.roomId) {
       return new Response('roomId mismatch', { status: 409 });
     }
