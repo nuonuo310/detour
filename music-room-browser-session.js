@@ -22,27 +22,48 @@ export function createBrowserMusicRoomSession({
   ...options
 } = {}) {
   let playbackArmed = !requirePlaybackArm;
+  let armedAt = playbackArmed ? -Infinity : Infinity;
+  let joinedPlayAt = null;
+  let session = null;
 
-  const session = createMediaRoomClient({
+  const serviceNow = () => Date.now() + Number(session?.getServiceClockOffset?.() || 0);
+  const playbackAllowed = () => {
+    if (!playbackArmed) return false;
+    if (typeof options.canPlay === 'function' && options.canPlay() === false) return false;
+    if (!requirePlaybackArm) return true;
+
+    const state = session?.getState?.();
+    if (!state?.playing) return true;
+    const playAt = Number(state.playAt);
+    if (!Number.isFinite(playAt)) return false;
+    return playAt >= armedAt || playAt === joinedPlayAt;
+  };
+
+  session = createMediaRoomClient({
     ...options,
     url: musicRoomWebSocketUrl(location, roomId),
     roomId,
     clientId,
     media,
     resolveSource,
-    canPlay: () => playbackArmed && (typeof options.canPlay !== 'function' || options.canPlay() !== false)
+    canPlay: playbackAllowed
   });
 
   return {
     ...session,
     isPlaybackArmed: () => playbackArmed,
-    async armPlayback() {
+    async armPlayback({ joinCurrent = false } = {}) {
       playbackArmed = true;
+      armedAt = serviceNow();
+      const currentPlayAt = Number(session.getState()?.playAt);
+      joinedPlayAt = joinCurrent && Number.isFinite(currentPlayAt) ? currentPlayAt : null;
       await session.sync();
       return session.whenSynced();
     },
     disarmPlayback() {
       playbackArmed = false;
+      armedAt = Infinity;
+      joinedPlayAt = null;
       session.player.pause();
       return playbackArmed;
     }
