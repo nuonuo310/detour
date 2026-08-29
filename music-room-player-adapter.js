@@ -12,7 +12,9 @@ export function planPlayerSync(playerState, roomState, projectedPosition, { seek
   const scheduledDelay = shouldPlay && Number.isFinite(playAt) && Number.isFinite(now) ? Math.max(0, playAt - now) : 0;
 
   if (songChanged) {
-    return [{ type: 'load', song: roomSong, currentTime: targetTime, playing: shouldPlay && scheduledDelay === 0 }];
+    const actions = [{ type: 'load', song: roomSong, currentTime: targetTime, playing: shouldPlay && scheduledDelay === 0 }];
+    if (shouldPlay && scheduledDelay > 0) actions.push({ type: 'playAt', delayMs: scheduledDelay, playAt });
+    return actions;
   }
 
   const actions = [];
