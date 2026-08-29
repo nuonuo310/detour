@@ -2,23 +2,6 @@ import { planPlayerSync } from './music-room-player-adapter.js';
 import { createMediaElementPlayer } from './music-room-media-element-player.js';
 import { createWebSocketRoomClient } from './music-room-websocket-client.js';
 
-async function runPlayerActions(player, actions) {
-  for (const action of actions) {
-    if (action.type === 'load') {
-      await player.load(action.song, {
-        currentTime: action.currentTime,
-        playing: action.playing
-      });
-    } else if (action.type === 'seek') {
-      player.seek(action.currentTime);
-    } else if (action.type === 'play') {
-      await player.play();
-    } else if (action.type === 'pause') {
-      player.pause();
-    }
-  }
-}
-
 /**
  * Browser-facing composition for "一起听":
  * WebSocket room authority -> canonical state -> HTMLMediaElement.
@@ -39,23 +22,57 @@ export function createMediaRoomClient({
   onSync,
   onOpen,
   onClose,
-  webSocketFactory
+  webSocketFactory,
+  setTimer = setTimeout,
+  clearTimer = clearTimeout,
+  now = () => Date.now()
 } = {}) {
   const player = createMediaElementPlayer({ media, resolveSource });
   let room = null;
   let syncChain = Promise.resolve();
+  let playTimer = null;
+  let scheduledPlayAt = null;
+
+  const clearScheduledPlay = () => {
+    if (playTimer) clearTimer(playTimer);
+    playTimer = null;
+    scheduledPlayAt = null;
+  };
+
+  const runPlayerActions = async actions => {
+    for (const action of actions) {
+      if (action.type === 'load') {
+        clearScheduledPlay();
+        await player.load(action.song, { currentTime: action.currentTime, playing: action.playing });
+      } else if (action.type === 'seek') {
+        player.seek(action.currentTime);
+      } else if (action.type === 'playAt') {
+        if (scheduledPlayAt === action.playAt) continue;
+        clearScheduledPlay();
+        scheduledPlayAt = action.playAt;
+        playTimer = setTimer(async () => {
+          playTimer = null;
+          scheduledPlayAt = null;
+          if (!room?.getState()?.playing || Number(room.getState()?.playAt) !== Number(action.playAt)) return;
+          await player.play();
+        }, Math.max(0, action.delayMs));
+      } else if (action.type === 'play') {
+        clearScheduledPlay();
+        await player.play();
+      } else if (action.type === 'pause') {
+        clearScheduledPlay();
+        player.pause();
+      }
+    }
+  };
 
   const scheduleSync = roomState => {
     syncChain = syncChain
       .then(async () => {
         if (!room) return [];
-        const actions = planPlayerSync(
-          player.getState(),
-          roomState,
-          () => room.getPosition(),
-          { seekThreshold }
-        );
-        await runPlayerActions(player, actions);
+        const serviceNow = () => Number(now()) + Number(room.getServiceClockOffset?.() || 0);
+        const actions = planPlayerSync(player.getState(), roomState, () => room.getPosition(), { seekThreshold, serviceNow });
+        await runPlayerActions(actions);
         onSync?.(actions, roomState, player.getState());
         return actions;
       })
@@ -87,6 +104,10 @@ export function createMediaRoomClient({
     ...room,
     player,
     sync: () => scheduleSync(room.getState()),
-    whenSynced: () => syncChain
+    whenSynced: () => syncChain,
+    close(code, reason) {
+      clearScheduledPlay();
+      room.close(code, reason);
+    }
   };
 }
