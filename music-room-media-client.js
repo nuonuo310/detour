@@ -70,6 +70,7 @@ export function createMediaRoomClient({
     syncChain = syncChain
       .then(async () => {
         if (!room) return [];
+        if (!roomState?.playing) clearScheduledPlay();
         const serviceNow = () => Number(now()) + Number(room.getServiceClockOffset?.() || 0);
         const actions = planPlayerSync(player.getState(), roomState, () => room.getPosition(), { seekThreshold, serviceNow });
         await runPlayerActions(actions);
