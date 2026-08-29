@@ -1,0 +1,8 @@
+# Local authenticated browser/session material. Never commit.
+.local/
+meituan-storage-state.json
+*.meituan-storage-state.json
+
+# Local environment overrides may contain session material.
+.env.meituan
+.env.meituan.local
