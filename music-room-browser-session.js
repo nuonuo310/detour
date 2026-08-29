@@ -18,14 +18,33 @@ export function createBrowserMusicRoomSession({
   clientId,
   media,
   resolveSource,
+  requirePlaybackArm = true,
   ...options
 } = {}) {
-  return createMediaRoomClient({
+  let playbackArmed = !requirePlaybackArm;
+
+  const session = createMediaRoomClient({
     ...options,
     url: musicRoomWebSocketUrl(location, roomId),
     roomId,
     clientId,
     media,
-    resolveSource
+    resolveSource,
+    canPlay: () => playbackArmed && (typeof options.canPlay !== 'function' || options.canPlay() !== false)
   });
+
+  return {
+    ...session,
+    isPlaybackArmed: () => playbackArmed,
+    async armPlayback() {
+      playbackArmed = true;
+      await session.sync();
+      return session.whenSynced();
+    },
+    disarmPlayback() {
+      playbackArmed = false;
+      session.player.pause();
+      return playbackArmed;
+    }
+  };
 }
