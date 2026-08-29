@@ -44,7 +44,7 @@ class FakeSocket {
   }
 }
 
-const media = {
+const makeMedia = () => ({
   src: '', paused: true, ended: false, currentTime: 0, readyState: 1,
   load() {},
   playCalls: 0,
@@ -53,46 +53,91 @@ const media = {
   pause() { this.pauseCalls += 1; this.paused = true; },
   removeAttribute(name) { if (name === 'src') this.src = ''; },
   addEventListener() {}
-};
-
-let socket;
-const session = createBrowserMusicRoomSession({
-  location: { protocol: 'https:', host: 'detour.example' },
-  roomId: 'ours',
-  clientId: 'nuonuo',
-  media,
-  resolveSource: song => `/audio/${song.providerId}.mp3`,
-  webSocketFactory: () => (socket = new FakeSocket())
 });
 
-socket.open();
-assert.equal(session.isPlaybackArmed(), false);
+const song = { key: 'mock:song-a', provider: 'mock', providerId: 'song-a', title: 'Song A', artist: 'Detour', duration: 300, source: null };
 
-const now = Date.now();
-socket.receive({
-  kind: 'snapshot',
-  serverNow: now,
-  state: {
-    roomId: 'ours', authorityId: 'room-service', revision: 1,
-    song: { key: 'mock:song-a', provider: 'mock', providerId: 'song-a', title: 'Song A', artist: 'Detour', duration: 300, source: null },
-    playing: true, position: 12, positionAt: now, playAt: null,
-    updatedAt: new Date(now).toISOString(), updatedBy: 'shenshu'
-  }
-});
+{
+  const media = makeMedia();
+  let socket;
+  const session = createBrowserMusicRoomSession({
+    location: { protocol: 'https:', host: 'detour.example' },
+    roomId: 'ours',
+    clientId: 'nuonuo',
+    media,
+    resolveSource: item => `/audio/${item.providerId}.mp3`,
+    webSocketFactory: () => (socket = new FakeSocket())
+  });
 
-await session.whenSynced();
-assert.equal(media.src, '/audio/song-a.mp3');
-assert.equal(media.paused, true, 'canonical playing state must stay silent before local arm');
-assert.equal(media.playCalls, 0);
+  socket.open();
+  assert.equal(session.isPlaybackArmed(), false);
 
-await session.armPlayback();
-assert.equal(session.isPlaybackArmed(), true);
-assert.equal(media.paused, false, 'arming explicitly may join current canonical playback');
-assert.equal(media.playCalls, 1);
+  const now = Date.now();
+  socket.receive({
+    kind: 'snapshot',
+    serverNow: now,
+    state: {
+      roomId: 'ours', authorityId: 'room-service', revision: 1,
+      song, playing: true, position: 12, positionAt: now - 5000, playAt: now - 5000,
+      updatedAt: new Date(now).toISOString(), updatedBy: 'shenshu'
+    }
+  });
 
-session.disarmPlayback();
-assert.equal(session.isPlaybackArmed(), false);
-assert.equal(media.paused, true);
+  await session.whenSynced();
+  assert.equal(media.src, '/audio/song-a.mp3');
+  assert.equal(media.paused, true, 'canonical playing state must stay silent before local arm');
+  assert.equal(media.playCalls, 0);
 
-session.close();
+  await session.armPlayback();
+  assert.equal(session.isPlaybackArmed(), true);
+  assert.equal(media.paused, true, 'arming must not replay a stale canonical play generation');
+  assert.equal(media.playCalls, 0);
+
+  const futurePlayAt = Date.now() + 1000;
+  socket.receive({
+    kind: 'snapshot',
+    serverNow: Date.now(),
+    state: {
+      ...session.getState(), revision: 2, playing: true, playAt: futurePlayAt, positionAt: futurePlayAt,
+      updatedAt: new Date().toISOString(), updatedBy: 'shenshu'
+    }
+  });
+  await session.whenSynced();
+  assert.equal(media.playCalls, 0, 'future generation is scheduled rather than started immediately');
+
+  session.disarmPlayback();
+  assert.equal(session.isPlaybackArmed(), false);
+  assert.equal(media.paused, true);
+  session.close();
+}
+
+{
+  const media = makeMedia();
+  let socket;
+  const session = createBrowserMusicRoomSession({
+    location: { protocol: 'https:', host: 'detour.example' },
+    roomId: 'ours-join',
+    clientId: 'nuonuo',
+    media,
+    resolveSource: item => `/audio/${item.providerId}.mp3`,
+    webSocketFactory: () => (socket = new FakeSocket())
+  });
+
+  socket.open();
+  const now = Date.now();
+  socket.receive({
+    kind: 'snapshot',
+    serverNow: now,
+    state: {
+      roomId: 'ours-join', authorityId: 'room-service', revision: 1,
+      song, playing: true, position: 20, positionAt: now - 3000, playAt: now - 3000,
+      updatedAt: new Date(now).toISOString(), updatedBy: 'shenshu'
+    }
+  });
+  await session.whenSynced();
+  await session.armPlayback({ joinCurrent: true });
+  assert.equal(media.playCalls, 1, 'explicit joinCurrent may enter an already-playing room');
+  session.close();
+}
+
 console.log('music browser room session tests passed');
