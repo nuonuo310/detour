@@ -25,13 +25,22 @@ export function createMediaRoomClient({
   webSocketFactory,
   setTimer = setTimeout,
   clearTimer = clearTimeout,
-  now = () => Date.now()
+  now = () => Date.now(),
+  canPlay = () => true
 } = {}) {
   const player = createMediaElementPlayer({ media, resolveSource });
   let room = null;
   let syncChain = Promise.resolve();
   let playTimer = null;
   let scheduledPlayAt = null;
+
+  const playbackAllowed = () => {
+    try {
+      return canPlay() !== false;
+    } catch {
+      return false;
+    }
+  };
 
   const clearScheduledPlay = () => {
     if (playTimer) clearTimer(playTimer);
@@ -43,7 +52,10 @@ export function createMediaRoomClient({
     for (const action of actions) {
       if (action.type === 'load') {
         clearScheduledPlay();
-        await player.load(action.song, { currentTime: action.currentTime, playing: action.playing });
+        await player.load(action.song, {
+          currentTime: action.currentTime,
+          playing: Boolean(action.playing && playbackAllowed())
+        });
       } else if (action.type === 'seek') {
         player.seek(action.currentTime);
       } else if (action.type === 'playAt') {
@@ -54,11 +66,12 @@ export function createMediaRoomClient({
           playTimer = null;
           scheduledPlayAt = null;
           if (!room?.getState()?.playing || Number(room.getState()?.playAt) !== Number(action.playAt)) return;
+          if (!playbackAllowed()) return;
           await player.play();
         }, Math.max(0, action.delayMs));
       } else if (action.type === 'play') {
         clearScheduledPlay();
-        await player.play();
+        if (playbackAllowed()) await player.play();
       } else if (action.type === 'pause') {
         clearScheduledPlay();
         player.pause();
