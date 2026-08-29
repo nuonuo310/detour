@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "meituan:session:capture": "node tools/meituan-session-capture.mjs",
     "meituan:preview:smoke": "node tools/meituan-preview-smoke.mjs",
     "meituan:preview:probe": "node tools/meituan-preview-probe.mjs"
   },
