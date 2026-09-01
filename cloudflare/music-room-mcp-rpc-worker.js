@@ -7,7 +7,16 @@ export class MusicRoom extends BaseMusicRoom {
 }
 
 const READ_ONLY = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
-const SONG_SCHEMA = { type: ['object', 'null'], properties: { key: { type: ['string', 'null'] }, provider: { type: ['string', 'null'] }, providerId: { type: ['string', 'null'] }, title: { type: 'string' }, artist: { type: 'string' }, duration: { type: ['number', 'null'] }, source: { type: ['string', 'null'] } }, additionalProperties: true };
+const SONG_PROPERTIES = {
+  key: { type: ['string', 'null'] },
+  provider: { type: ['string', 'null'] },
+  providerId: { type: ['string', 'null'] },
+  title: { type: 'string' },
+  artist: { type: 'string' },
+  duration: { type: ['number', 'null'] },
+  source: { type: ['string', 'null'] }
+};
+const SONG_SCHEMA = { type: ['object', 'null'], properties: SONG_PROPERTIES, additionalProperties: true };
 const ROOM_STATE_TOOL = {
   name: 'get_room_state', title: 'Get music room state', description: 'Read the current canonical Detour music-room state. Read-only.',
   inputSchema: { type: 'object', properties: { roomId: { type: 'string', minLength: 1 } }, required: ['roomId'], additionalProperties: false },
@@ -17,10 +26,11 @@ const ROOM_STATE_TOOL = {
 const SEARCH_TRACKS_TOOL = {
   name: 'search_tracks', title: 'Search tracks', description: 'Search the configured music catalog and return provider-neutral Detour song identities. Read-only.',
   inputSchema: { type: 'object', properties: { query: { type: 'string', minLength: 1 }, limit: { type: 'integer', minimum: 1, maximum: 10, default: 5 } }, required: ['query'], additionalProperties: false },
-  outputSchema: { type: 'object', properties: { provider: { type: 'string' }, query: { type: 'string' }, songs: { type: 'array', items: { ...SONG_SCHEMA, type: 'object' } } }, required: ['provider', 'query', 'songs'], additionalProperties: false },
+  outputSchema: { type: 'object', properties: { provider: { type: 'string' }, query: { type: 'string' }, songs: { type: 'array', items: { type: 'object', properties: SONG_PROPERTIES, additionalProperties: true } } }, required: ['provider', 'query', 'songs'], additionalProperties: false },
   annotations: READ_ONLY
 };
-const TOOLS = [ROOM_STATE_TOOL, SEARCH_TRACKS_TOOL];
+const spotifyConfigured = env => Boolean(env.SPOTIFY_CLIENT_ID && env.SPOTIFY_CLIENT_SECRET);
+const toolsFor = env => spotifyConfigured(env) ? [ROOM_STATE_TOOL, SEARCH_TRACKS_TOOL] : [ROOM_STATE_TOOL];
 
 const response = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 const result = (id, value) => response({ jsonrpc: '2.0', id, result: value });
@@ -38,12 +48,12 @@ function sanitize(state, now = Date.now()) {
   return { roomId: String(state?.roomId || ''), revision: Number(state?.revision) || 0, playing: Boolean(state?.playing), position, projectedPosition, song: state?.song ?? null, updatedAt: state?.updatedAt ?? null, updatedBy: state?.updatedBy ?? null };
 }
 function spotifySearch(env) {
-  if (!env.SPOTIFY_CLIENT_ID || !env.SPOTIFY_CLIENT_SECRET) throw new Error('Spotify search is not configured');
+  if (!spotifyConfigured(env)) throw new Error('Spotify search is not configured');
   return createSongSearch({ providers: { spotify: createSpotifySongSearchProvider({ clientId: env.SPOTIFY_CLIENT_ID, clientSecret: env.SPOTIFY_CLIENT_SECRET }) } });
 }
 async function callTool(env, params) {
   if (params?.name === ROOM_STATE_TOOL.name) { const roomId = String(params?.arguments?.roomId || '').trim(); if (!roomId) return { isError: true, content: [{ type: 'text', text: 'roomId is required' }] }; return toolResult(sanitize(await env.MUSIC_ROOM.getByName(roomId).getMcpState())); }
-  if (params?.name === SEARCH_TRACKS_TOOL.name) { const query = String(params?.arguments?.query || '').trim(); if (!query) return { isError: true, content: [{ type: 'text', text: 'query is required' }] }; const songs = await spotifySearch(env).search(query, { provider: 'spotify', limit: params?.arguments?.limit }); return toolResult({ provider: 'spotify', query, songs }); }
+  if (params?.name === SEARCH_TRACKS_TOOL.name && spotifyConfigured(env)) { const query = String(params?.arguments?.query || '').trim(); if (!query) return { isError: true, content: [{ type: 'text', text: 'query is required' }] }; const songs = await spotifySearch(env).search(query, { provider: 'spotify', limit: params?.arguments?.limit }); return toolResult({ provider: 'spotify', query, songs }); }
   return { isError: true, content: [{ type: 'text', text: 'Unknown tool' }] };
 }
 export async function handleMcpRequest(request, env) {
@@ -51,9 +61,9 @@ export async function handleMcpRequest(request, env) {
   let message; try { message = await request.json(); } catch { return error(null, -32700, 'Parse error'); }
   if (!message || Array.isArray(message) || message.jsonrpc !== '2.0' || typeof message.method !== 'string') return error(message?.id, -32600, 'Invalid Request');
   if (message.method === 'notifications/initialized') return new Response(null, { status: 202 });
-  if (message.method === 'initialize') return result(message.id, { protocolVersion: String(message.params?.protocolVersion || '2025-11-25'), capabilities: { tools: { listChanged: false } }, serverInfo: { name: 'detour-music-room', version: '0.2.0' }, instructions: 'Read-only access to Detour room state and music catalog search.' });
-  if (message.method === 'server/discover') return result(message.id, { supportedVersions: ['2026-07-28', '2025-11-25'], capabilities: { tools: { listChanged: false } }, serverInfo: { name: 'detour-music-room', version: '0.2.0' }, instructions: 'Read-only access to Detour room state and music catalog search.', ttlMs: 300000, cacheScope: 'private' });
-  if (message.method === 'tools/list') return result(message.id, { tools: TOOLS });
+  if (message.method === 'initialize') return result(message.id, { protocolVersion: String(message.params?.protocolVersion || '2025-11-25'), capabilities: { tools: { listChanged: false } }, serverInfo: { name: 'detour-music-room', version: '0.2.1' }, instructions: 'Read-only access to Detour room state and configured music catalog search.' });
+  if (message.method === 'server/discover') return result(message.id, { supportedVersions: ['2026-07-28', '2025-11-25'], capabilities: { tools: { listChanged: false } }, serverInfo: { name: 'detour-music-room', version: '0.2.1' }, instructions: 'Read-only access to Detour room state and configured music catalog search.', ttlMs: 300000, cacheScope: 'private' });
+  if (message.method === 'tools/list') return result(message.id, { tools: toolsFor(env) });
   if (message.method === 'tools/call') { try { return result(message.id, await callTool(env, message.params)); } catch (cause) { return result(message.id, { isError: true, content: [{ type: 'text', text: `Tool failed: ${cause?.message || 'unknown error'}` }] }); } }
   if (message.method === 'ping') return result(message.id, {}); return error(message.id, -32601, 'Method not found');
 }
