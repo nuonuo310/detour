@@ -10,7 +10,8 @@ export function createWebSocketRoomClient({
   onState,
   onOpen,
   onClose,
-  webSocketFactory
+  webSocketFactory,
+  now
 }) {
   let client;
   const transport = createWebSocketTransport({
@@ -29,6 +30,7 @@ export function createWebSocketRoomClient({
     authorityId,
     initialState,
     onState,
+    now,
     sendMessage: message => transport.send(message)
   });
 
