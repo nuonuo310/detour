@@ -107,6 +107,7 @@ export function createMediaRoomClient({
     authorityId,
     initialState,
     webSocketFactory,
+    now,
     onOpen,
     onClose,
     onState: (state, source) => {
