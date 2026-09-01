@@ -37,7 +37,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
-      - run: npm ci
       - run: npm run test:music-room
       - run: npm run test:music-search
