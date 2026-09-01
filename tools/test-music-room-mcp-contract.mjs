@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { handleMcpRequest } from '../cloudflare/music-room-mcp-rpc-worker.js';
+import { handleMcpRequest } from '../cloudflare/music-room-mcp-protocol.js';
 
 const token = 'test-read-token';
 const roomState = {
