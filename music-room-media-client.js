@@ -35,12 +35,9 @@ export function createMediaRoomClient({
   let scheduledPlayAt = null;
 
   const playbackAllowed = () => {
-    try {
-      return canPlay() !== false;
-    } catch {
-      return false;
-    }
+    try { return canPlay() !== false; } catch { return false; }
   };
+  const serviceNow = () => Number(now()) + Number(room?.getServiceClockOffset?.() || 0);
 
   const clearScheduledPlay = () => {
     if (playTimer) clearTimer(playTimer);
@@ -52,23 +49,30 @@ export function createMediaRoomClient({
     for (const action of actions) {
       if (action.type === 'load') {
         clearScheduledPlay();
-        await player.load(action.song, {
-          currentTime: action.currentTime,
-          playing: Boolean(action.playing && playbackAllowed())
-        });
+        await player.load(action.song, { currentTime: action.currentTime, playing: Boolean(action.playing && playbackAllowed()) });
       } else if (action.type === 'seek') {
         player.seek(action.currentTime);
       } else if (action.type === 'playAt') {
         if (scheduledPlayAt === action.playAt) continue;
         clearScheduledPlay();
+        const remainingMs = Number(action.playAt) - serviceNow();
+        if (remainingMs <= 0) {
+          if (!room?.getState()?.playing || Number(room.getState()?.playAt) !== Number(action.playAt) || !playbackAllowed()) continue;
+          const catchUp = Number(room.getPosition?.());
+          if (Number.isFinite(catchUp) && Math.abs((Number(player.getState()?.currentTime) || 0) - catchUp) > seekThreshold) player.seek(catchUp);
+          await player.play();
+          continue;
+        }
         scheduledPlayAt = action.playAt;
         playTimer = setTimer(async () => {
           playTimer = null;
           scheduledPlayAt = null;
           if (!room?.getState()?.playing || Number(room.getState()?.playAt) !== Number(action.playAt)) return;
           if (!playbackAllowed()) return;
+          const catchUp = Number(room.getPosition?.());
+          if (Number.isFinite(catchUp) && Math.abs((Number(player.getState()?.currentTime) || 0) - catchUp) > seekThreshold) player.seek(catchUp);
           await player.play();
-        }, Math.max(0, action.delayMs));
+        }, remainingMs);
       } else if (action.type === 'play') {
         clearScheduledPlay();
         if (playbackAllowed()) await player.play();
@@ -84,7 +88,6 @@ export function createMediaRoomClient({
       .then(async () => {
         if (!room) return [];
         if (!roomState?.playing) clearScheduledPlay();
-        const serviceNow = () => Number(now()) + Number(room.getServiceClockOffset?.() || 0);
         const actions = planPlayerSync(player.getState(), roomState, () => room.getPosition(), { seekThreshold, serviceNow });
         await runPlayerActions(actions);
         onSync?.(actions, roomState, player.getState());
