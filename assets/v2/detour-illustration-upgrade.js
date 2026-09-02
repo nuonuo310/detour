@@ -1,6 +1,6 @@
 (()=>{
   const modules={
-    listen:{src:'../assets/v2/art/listen-gramophone.webp',alt:'紫藤与唱片机静物'},
+    listen:{src:'../assets/v2/art/listen-gramophone.svg',alt:'紫藤与唱片机静物'},
     read:{src:'../assets/v2/art/read-books.webp',alt:'紫藤与书本静物'},
     gifts:{src:'../assets/v2/art/gifts-keepsakes.webp',alt:'信封、礼物、蜡封与珍珠静物'},
     feed:{src:'../assets/v2/art/feeding-tea.webp',alt:'奶茶、茶杯与托盘静物'},
