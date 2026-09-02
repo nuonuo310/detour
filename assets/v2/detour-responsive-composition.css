@@ -1,0 +1,51 @@
+/* Detour v2 responsive composition recovery.
+   Portrait keeps the fox/TODAY/bell axis sacred while the six illustrated entries stagger at the edges. */
+#detourV2{--dv2-center-safe:clamp(168px,30vw,330px)}
+@media (max-width:720px){
+  .dv2-opening-copy{left:7%;top:9%;width:58%}
+  .dv2-opening-copy h1{font-size:clamp(48px,15vw,72px)}
+  .dv2-bell-rig{right:3%;top:7%;width:126px}
+  .dv2-bell-rig .bell{font-size:64px}
+  /* The wake control belongs to the bell, never the left copy column. */
+  .dv2-wake{right:4%;top:25%;bottom:auto;width:92px;height:92px}
+  .dv2-opening-foxwrap{top:51%}
+  .dv2-opening-quote{bottom:5%;width:76%}
+
+  .dv2-lobby{padding:12px 8px 18px;overflow-x:hidden}
+  .dv2-lobby-top{height:176px}
+  .dv2-brand{left:3%;width:38%;text-align:left}
+  .dv2-brand h2{font-size:30px}
+  .dv2-meta{top:0;width:44%}
+  .dv2-profiles{right:4%;top:83px}
+  .dv2-mode{right:3%;top:5px;transform:scale(.82);transform-origin:100% 0}
+
+  .dv2-hall{height:790px;width:100%;max-width:520px}
+  .dv2-center{left:50%;top:10%;width:var(--dv2-center-safe);height:70%;z-index:4;pointer-events:none}
+  .dv2-center-glow{width:150px}
+  .dv2-center .dv2-fox{transform:scale(.72);transform-origin:50% 20%}
+
+  .dv2-entry{width:42%;min-height:150px;padding:4px;z-index:3}
+  .dv2-entry .copyblock{width:68%;padding-top:8px}
+  .dv2-entry h3{font-size:clamp(22px,7vw,30px)}
+  .dv2-entry .cnlabel{font-size:11px}
+  .dv2-entry p{font-size:8px;line-height:1.45}
+  .dv2-entry .art{width:62%;height:108px;top:30px;opacity:.88}
+  .dv2-entry:nth-of-type(odd) .art{right:-17%}
+  .dv2-entry:nth-of-type(even) .art{left:-17%;right:auto}
+
+  /* staggered edge worlds; their subjects stay outside the central breathing lane */
+  .listen{left:-1%;top:1%}.read{right:-1%;top:4%}
+  .gifts{left:-4%;top:31%}.feed{right:-4%;top:35%}
+  .games{left:0;top:62%}.dates{right:0;top:65%}
+  .read .copyblock,.feed .copyblock,.dates .copyblock{margin-left:auto;text-align:right}
+
+  .dv2-center:before{content:"";position:absolute;left:50%;top:0;bottom:0;width:var(--dv2-center-safe);transform:translateX(-50%);pointer-events:none}
+}
+@media (max-width:430px){
+  #detourV2{--dv2-center-safe:156px}
+  .dv2-lobby-top{height:190px}
+  .dv2-hall{height:820px}
+  .dv2-entry{width:43%}
+  .dv2-entry p{max-width:108px}
+  .dv2-center{top:12%}
+}
