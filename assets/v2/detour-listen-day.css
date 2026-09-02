@@ -2,6 +2,8 @@
    Internal geometry follows day-listen-v1 manifest (1122 × 1402).
    The existing Listen slot owns placement/size; this file only composes art inside it. */
 .listen .dv2-listen-day-slot{overflow:visible!important}
+.listen .dv2-listen-day-fallback{position:absolute;inset:0;display:grid;place-items:center;opacity:.48;transition:opacity .2s ease}
+.listen .dv2-listen-day-slot.has-static .dv2-listen-day-fallback,.listen .dv2-listen-day-slot.is-ready .dv2-listen-day-fallback{opacity:0;pointer-events:none}
 .listen .dv2-listen-day-static,.listen .dv2-listen-day-canvas{position:absolute;left:50%;top:50%;height:100%;width:auto;max-width:100%;aspect-ratio:1122/1402;transform:translate(-50%,-50%);pointer-events:none}
 .listen .dv2-listen-day-static{object-fit:contain;opacity:0;transition:opacity .22s ease;filter:drop-shadow(0 10px 14px rgba(83,64,118,.08))}
 .listen .dv2-listen-day-slot.has-static .dv2-listen-day-static{opacity:1}
@@ -29,7 +31,7 @@
 @keyframes dv2ListenFlowersRight{0%,100%{transform:rotate(0)}50%{transform:rotate(.4deg)}}
 @media(max-width:720px){.listen .dv2-listen-day-static{filter:drop-shadow(0 7px 10px rgba(83,64,118,.07))}}
 @media(prefers-reduced-motion:reduce){
-  .listen .dv2-listen-day-static,.listen .dv2-listen-day-canvas{transition:none}
+  .listen .dv2-listen-day-fallback,.listen .dv2-listen-day-static,.listen .dv2-listen-day-canvas{transition:none}
   .listen .dv2-listen-day-record,.listen .dv2-listen-day-branch-right,.listen .dv2-listen-day-flowers-left,.listen .dv2-listen-day-flowers-right-ground{animation:none!important;transform:none}
   .listen .dv2-listen-day-record-scale{transform:translate(-50%,-50%) scaleY(.2088889)}
 }
