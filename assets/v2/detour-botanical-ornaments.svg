@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420">
+  <defs>
+    <linearGradient id="lavender" x1="0" x2="1"><stop stop-color="#efe6f7"/><stop offset=".55" stop-color="#cdb9e1"/><stop offset="1" stop-color="#9b7abb"/></linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fffaf2"/><stop offset="1" stop-color="#f2e8dc"/></linearGradient>
+    <linearGradient id="gold" x1="0" x2="1"><stop stop-color="#e3d3b0"/><stop offset=".5" stop-color="#b99b67"/><stop offset="1" stop-color="#f2e5c8"/></linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="2"/></filter>
+  </defs>
+
+  <!-- hand-drawn stationery bow -->
+  <g id="stationery-bow" transform="translate(40 45)" fill="none" stroke="#8f72ad" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M0 42h56M164 42h56" stroke-width="2"/>
+    <path d="M110 44c-23-34-51-34-51-11 0 21 31 21 51 11Zm0 0c23-34 51-34 51-11 0 21-31 21-51 11Z" stroke-width="2.4"/>
+    <path d="M105 45c-8 18-17 31-35 45M115 45c8 18 17 31 35 45" stroke-width="2"/>
+    <ellipse cx="110" cy="44" rx="9" ry="7" fill="url(#lavender)" stroke-width="1.8"/>
+    <path d="M77 28c8 1 14 6 18 14M143 28c-8 1-14 6-18 14" stroke-width="1" opacity=".65"/>
+  </g>
+
+  <!-- wisteria corner cluster -->
+  <g id="wisteria-cluster" transform="translate(325 10)">
+    <g fill="none" stroke="#859777" stroke-width="2" stroke-linecap="round">
+      <path d="M0 34c54 8 101 30 145 61 40 28 78 38 128 41"/>
+      <path d="M42 51c-6 39-4 82 8 127M87 67c-7 31-4 72 8 112M134 92c-4 27-2 61 7 93M189 110c-3 23-1 46 5 72"/>
+      <path d="M31 77l-17-10M54 89l18-14M83 104l-19-8M102 121l18-15M134 132l-18-9M151 149l16-12" opacity=".7"/>
+    </g>
+    <g fill="url(#lavender)" stroke="#8b6da7" stroke-width="1">
+      <ellipse cx="41" cy="81" rx="11" ry="8"/><ellipse cx="47" cy="101" rx="10" ry="8"/><ellipse cx="44" cy="121" rx="10" ry="8"/><ellipse cx="51" cy="142" rx="9" ry="7"/><ellipse cx="49" cy="161" rx="7" ry="6"/>
+      <ellipse cx="87" cy="99" rx="11" ry="8"/><ellipse cx="93" cy="120" rx="10" ry="8"/><ellipse cx="91" cy="141" rx="10" ry="8"/><ellipse cx="98" cy="161" rx="8" ry="6"/>
+      <ellipse cx="134" cy="121" rx="10" ry="8"/><ellipse cx="140" cy="140" rx="9" ry="7"/><ellipse cx="138" cy="159" rx="8" ry="6"/>
+      <ellipse cx="189" cy="137" rx="9" ry="7"/><ellipse cx="194" cy="155" rx="8" ry="6"/><ellipse cx="192" cy="172" rx="7" ry="5"/>
+    </g>
+    <g fill="#eadff4" opacity=".8"><circle cx="21" cy="59" r="5"/><circle cx="69" cy="77" r="4"/><circle cx="114" cy="103" r="5"/><circle cx="165" cy="121" r="4"/></g>
+  </g>
+
+  <!-- miniature paper seal -->
+  <g id="paper-seal" transform="translate(660 55)">
+    <path d="M0 36 73 0l73 36v86H0Z" fill="url(#paper)" stroke="#bca7cb" stroke-width="2"/>
+    <path d="M1 38l72 49 72-49" fill="#e1d3eb" stroke="#a98bc7" stroke-width="1.5"/>
+    <circle cx="73" cy="86" r="16" fill="#b98c9f" stroke="#8c6882" stroke-width="2"/>
+    <path d="M65 86c7-11 16-8 16 0 0 8-8 13-8 13s-8-5-8-13Z" fill="#f7edf2"/>
+    <path d="M21 18c28 11 57 11 104 0" fill="none" stroke="#d6c4df" stroke-width="1" stroke-dasharray="3 4"/>
+  </g>
+
+  <!-- floral cameo frame for avatars -->
+  <g id="cameo-frame" transform="translate(875 22)">
+    <circle cx="105" cy="105" r="68" fill="none" stroke="url(#gold)" stroke-width="3"/>
+    <circle cx="105" cy="105" r="61" fill="none" stroke="#d4c5df" stroke-width="1"/>
+    <g fill="url(#lavender)" stroke="#8b6da7" stroke-width="1">
+      <circle cx="42" cy="77" r="10"/><circle cx="31" cy="92" r="8"/><circle cx="39" cy="109" r="9"/><circle cx="49" cy="126" r="8"/>
+      <circle cx="168" cy="76" r="10"/><circle cx="179" cy="92" r="8"/><circle cx="171" cy="109" r="9"/><circle cx="161" cy="126" r="8"/>
+    </g>
+    <g fill="none" stroke="#899b80" stroke-width="2"><path d="M51 59c-20 11-31 28-31 48 0 17 8 33 24 47"/><path d="M159 59c20 11 31 28 31 48 0 17-8 33-24 47"/></g>
+    <path d="M83 24c11-19 32-19 43 0 11-18 34-12 30 7-4 18-30 31-30 31S101 49 96 31c-3-10-8-11-13-7Z" fill="url(#lavender)" stroke="#896ba4" stroke-width="1.5"/>
+  </g>
+</svg>
