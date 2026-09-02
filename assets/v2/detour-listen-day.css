@@ -1,0 +1,35 @@
+/* Detour v2 · 日镜 Listen layered illustration.
+   Internal geometry follows day-listen-v1 manifest (1122 × 1402).
+   The existing Listen slot owns placement/size; this file only composes art inside it. */
+.listen .dv2-listen-day-slot{overflow:visible!important}
+.listen .dv2-listen-day-static,.listen .dv2-listen-day-canvas{position:absolute;left:50%;top:50%;height:100%;width:auto;max-width:100%;aspect-ratio:1122/1402;transform:translate(-50%,-50%);pointer-events:none}
+.listen .dv2-listen-day-static{object-fit:contain;opacity:0;transition:opacity .22s ease;filter:drop-shadow(0 10px 14px rgba(83,64,118,.08))}
+.listen .dv2-listen-day-slot.has-static .dv2-listen-day-static{opacity:1}
+.listen .dv2-listen-day-slot.is-ready .dv2-listen-day-static{opacity:0}
+.listen .dv2-listen-day-canvas{opacity:0;transition:opacity .28s ease}
+.listen .dv2-listen-day-slot.is-ready .dv2-listen-day-canvas{opacity:1}
+.listen .dv2-listen-day-layer{position:absolute;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.listen .dv2-listen-day-body,.listen .dv2-listen-day-spindle{inset:0;width:100%;height:100%}
+.listen .dv2-listen-day-body{z-index:0}
+/* Manifest record center=(666,889), projectedSize=450×94.
+   Circular child rotates first; its parent applies the fixed 450×94 projection. */
+.listen .dv2-listen-day-record-projection{position:absolute;left:39.3048%;top:60.0571%;width:40.1069%;height:6.7047%;z-index:1;overflow:visible;pointer-events:none}
+.listen .dv2-listen-day-record-scale{position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1/1;transform:translate(-50%,-50%) scaleY(.2088889);transform-origin:50% 50%}
+.listen .dv2-listen-day-record{inset:0;width:100%;height:100%;transform-origin:50% 50%;animation:dv2ListenRecordSpin 2s linear infinite;animation-play-state:paused}
+.listen .dv2-listen-day-slot.is-playing .dv2-listen-day-record{animation-play-state:running}
+.listen .dv2-listen-day-spindle{z-index:2}
+/* Manifest rects + root-side pivots; machine/body never floats. */
+.listen .dv2-listen-day-branch-right{left:70.2317%;top:47.9315%;width:27.6292%;height:48.5735%;z-index:3;transform-origin:8.7097% 97.7974%;animation:dv2ListenBranchRight 4s ease-in-out infinite}
+.listen .dv2-listen-day-flowers-left{left:2.6738%;top:65.2639%;width:40.9982%;height:30.8131%;z-index:4;transform-origin:74.7826% 94.6759%;animation:dv2ListenFlowersLeft 4.4s ease-in-out .25s infinite}
+.listen .dv2-listen-day-flowers-right-ground{left:55.2585%;top:78.1027%;width:43.6720%;height:19.2582%;z-index:5;transform-origin:18.3673% 87.0370%;animation:dv2ListenFlowersRight 4.8s ease-in-out .5s infinite}
+.listen .dv2-listen-day-slot:not(.is-ambient-active) .dv2-listen-day-branch-right,.listen .dv2-listen-day-slot:not(.is-ambient-active) .dv2-listen-day-flowers-left,.listen .dv2-listen-day-slot:not(.is-ambient-active) .dv2-listen-day-flowers-right-ground{animation-play-state:paused}
+@keyframes dv2ListenRecordSpin{to{transform:rotate(360deg)}}
+@keyframes dv2ListenBranchRight{0%,100%{transform:rotate(0)}50%{transform:rotate(1deg)}}
+@keyframes dv2ListenFlowersLeft{0%,100%{transform:rotate(0)}50%{transform:rotate(-.85deg)}}
+@keyframes dv2ListenFlowersRight{0%,100%{transform:rotate(0)}50%{transform:rotate(.4deg)}}
+@media(max-width:720px){.listen .dv2-listen-day-static{filter:drop-shadow(0 7px 10px rgba(83,64,118,.07))}}
+@media(prefers-reduced-motion:reduce){
+  .listen .dv2-listen-day-static,.listen .dv2-listen-day-canvas{transition:none}
+  .listen .dv2-listen-day-record,.listen .dv2-listen-day-branch-right,.listen .dv2-listen-day-flowers-left,.listen .dv2-listen-day-flowers-right-ground{animation:none!important;transform:none}
+  .listen .dv2-listen-day-record-scale{transform:translate(-50%,-50%) scaleY(.2088889)}
+}
