@@ -6,7 +6,6 @@
   .dv2-opening-copy h1{font-size:clamp(48px,15vw,72px)}
   .dv2-bell-rig{right:3%;top:7%;width:126px}
   .dv2-bell-rig .bell{font-size:64px}
-  /* The wake control belongs to the bell, never the left copy column. */
   .dv2-wake{right:4%;top:25%;bottom:auto;width:92px;height:92px}
   .dv2-opening-foxwrap{top:51%}
   .dv2-opening-quote{bottom:5%;width:76%}
@@ -14,22 +13,21 @@
   .dv2-lobby{padding:12px 8px 18px;overflow-x:hidden}
   .dv2-lobby-top{height:184px}
 
-  /* Top hierarchy: Detour floats directly on the scene; weather keeps only a light paper hint. */
-  .dv2-paper{box-shadow:none!important;border-radius:0!important}
-  .dv2-brand{left:3%;top:4px;width:32%;padding:8px 2px 14px!important;text-align:left;background:transparent!important}
+  /* No competing cards: both top information groups float on translucent scene mist. */
+  .dv2-paper{box-shadow:none!important;border:0!important;border-radius:0!important}
+  .dv2-brand{left:3%;top:4px;width:34%;padding:8px 2px 14px!important;text-align:left;background:rgba(250,247,241,.18)!important;backdrop-filter:blur(1.5px)}
   .dv2-brand:before{display:none!important}
   .dv2-brand h2{font-size:30px}
-  .dv2-brand:after{bottom:-5px!important;font-size:9px!important;opacity:.48!important}
-  .dv2-meta{left:49%;top:3px;width:34%;padding:9px 7px 15px!important;background:linear-gradient(180deg,rgba(250,246,237,.58),rgba(246,240,230,.36))!important}
-  .dv2-meta:before{opacity:.12!important}
-  .dv2-meta:after{bottom:-7px!important;font-size:9px!important;opacity:.52!important}
+  .dv2-brand:after{bottom:-5px!important;font-size:9px!important;opacity:.44!important}
+  .dv2-meta{left:50%;top:3px;width:35%;padding:9px 7px 15px!important;background:rgba(250,247,241,.20)!important;backdrop-filter:blur(1.5px)}
+  .dv2-meta:before{display:none!important}
+  .dv2-meta:after{bottom:-6px!important;font-size:8px!important;opacity:.45!important}
 
-  /* Profiles need to remain legible after entering a module. */
-  .dv2-profiles{right:3%;top:77px;min-width:132px;transform:none!important}
-  .dv2-avatar-frame{width:60px;height:66px}
+  .dv2-profiles{right:2%;top:75px;min-width:138px;transform:none!important}
+  .dv2-avatar-frame{width:64px;height:70px}
   .dv2-avatar-frame:before{inset:3px 4px 7px}
   .dv2-avatar-frame:after{font-size:14px;right:-2px;top:-1px}
-  .dv2-avatar{left:8px;top:7px;width:44px;height:47px;font-size:10px}
+  .dv2-avatar{left:8px;top:7px;width:48px;height:51px;font-size:10px}
   .dv2-avatar-bow{font-size:12px;bottom:-1px}
   .dv2-avatar-wing{font-size:11px;top:14px}
   .dv2-pairlabel{margin-top:4px;font-size:8.5px}
@@ -40,40 +38,38 @@
   .dv2-center-glow{width:150px}
   .dv2-center .dv2-fox{transform:scale(.72);transform-origin:50% 20%}
 
+  /* Six entries are illustrated destinations, not navigation cards. Keep only the art + English name. */
   .dv2-entry{width:42%;min-height:150px;padding:4px;z-index:3}
-  .dv2-entry .copyblock{width:66%;padding-top:8px}
-  .dv2-entry h3{font-family:Baskerville,"Palatino Linotype","Book Antiqua",Georgia,serif!important;font-size:clamp(22px,7vw,30px);font-style:italic!important;font-weight:400!important;letter-spacing:-.045em!important}
-  .dv2-entry .cnlabel{font-size:11px}
-  .dv2-entry p{font-size:8px;line-height:1.45}
-  .dv2-entry .art{width:58%;height:108px;top:28px;opacity:.9}
-  /* Keep each still life close to its title instead of drifting into the fox lane. */
-  .listen .art,.gifts .art,.games .art{right:-2%!important;left:auto!important}
-  .read .art,.feed .art,.dates .art{left:-2%!important;right:auto!important}
+  .dv2-entry .copyblock{width:72%;padding-top:8px}
+  .dv2-entry h3{font-family:Baskerville,"Palatino Linotype","Book Antiqua",Georgia,serif!important;font-size:clamp(24px,7.5vw,32px);font-style:italic!important;font-weight:400!important;letter-spacing:-.045em!important;line-height:1!important}
+  .dv2-entry .cnlabel,.dv2-entry p{display:none!important}
+  .dv2-entry .art{width:66%;height:118px;top:16px;opacity:.94}
+  /* Pull each real still-life toward its own title and away from the protected fox lane. */
+  .listen .art,.gifts .art,.games .art{right:2%!important;left:auto!important}
+  .read .art,.feed .art,.dates .art{left:2%!important;right:auto!important}
 
-  /* staggered edge worlds; their subjects stay outside the central breathing lane */
   .listen{left:-1%;top:1%}.read{right:-1%;top:4%}
   .gifts{left:-4%;top:31%}.feed{right:-4%;top:35%}
   .games{left:0;top:62%}.dates{right:0;top:65%}
   .read .copyblock,.feed .copyblock,.dates .copyblock{margin-left:auto;text-align:right}
 
-  /* The bell belongs to the lower architecture, not the fox/TODAY cluster. */
-  .dv2-bell-zone{bottom:-34px!important;height:152px!important;padding-top:42px!important;width:54%!important}
-  .dv2-bell-zone button{width:72px!important;height:72px!important}
+  /* Bell is the lower threshold into the rest of Detour. */
+  .dv2-bell-zone{bottom:-54px!important;height:164px!important;padding-top:48px!important;width:56%!important}
+  .dv2-bell-zone button{width:76px!important;height:76px!important}
   .dv2-bell-zone small{font-size:8px!important;margin-top:2px!important}
-  .dv2-arch{height:132px!important;bottom:-8px!important}
-  .dv2-arch-copy{bottom:1px!important;font-size:8px!important}
+  .dv2-arch{height:136px!important;bottom:-18px!important}
+  .dv2-arch-copy{bottom:-5px!important;font-size:8px!important}
 
   .dv2-center:before{content:"";position:absolute;left:50%;top:0;bottom:0;width:var(--dv2-center-safe);transform:translateX(-50%);pointer-events:none}
 }
 @media (max-width:430px){
   #detourV2{--dv2-center-safe:156px}
   .dv2-lobby-top{height:196px}
-  .dv2-brand{width:31%}
-  .dv2-meta{left:48%;width:33%}
-  .dv2-profiles{right:1.5%;top:82px;min-width:128px}
+  .dv2-brand{width:33%}
+  .dv2-meta{left:49%;width:34%}
+  .dv2-profiles{right:1%;top:80px;min-width:136px}
   .dv2-hall{height:840px}
   .dv2-entry{width:43%}
-  .dv2-entry p{max-width:108px}
   .dv2-center{top:12%}
-  .dv2-bell-zone{bottom:-40px!important}
+  .dv2-bell-zone{bottom:-60px!important}
 }
