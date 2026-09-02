@@ -28,18 +28,26 @@
 .gifts .art:before,.dates .art:before{background:radial-gradient(circle at 48% 47%,rgba(255,250,243,.76),rgba(232,218,239,.24) 55%,transparent 74%)}
 .feed .art:before,.games .art:before{background:radial-gradient(circle at 48% 47%,rgba(255,251,244,.72),rgba(221,211,236,.20) 55%,transparent 74%)}
 .listen .art svg path,.read .art svg rect,.gifts .art svg rect,.feed .art svg path,.games .art svg path,.dates .art svg path{stroke-opacity:.93}
+.listen .art svg rect:first-of-type,.games .art svg path:first-of-type{filter:drop-shadow(0 1px 0 rgba(255,255,255,.5))}
+.read .art svg rect,.gifts .art svg rect,.feed .art svg path,.dates .art svg rect{shape-rendering:geometricPrecision}
+.gifts .art svg circle,.feed .art svg circle,.dates .art svg path:last-of-type{filter:drop-shadow(0 0 3px rgba(255,255,255,.24))}
 .center:before{content:"";position:absolute;top:8px;width:220px;height:110px;background:url('./detour-botanical-ornaments.svg') -162px -4px/600px 210px no-repeat;opacity:.11;transform:scaleX(-1);pointer-events:none}
 .center:after{content:"";position:absolute;top:176px;width:190px;height:42px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(105,82,137,.08),rgba(105,82,137,.03) 48%,transparent 72%);filter:blur(4px);pointer-events:none;z-index:-1}
 .fox{filter:drop-shadow(0 18px 28px rgba(88,64,120,.15)) drop-shadow(0 2px 0 rgba(255,255,255,.74))}
 .fox svg{overflow:visible}
 .fox svg path{stroke-linejoin:round}
 .fox svg path:nth-of-type(1),.fox svg path:nth-of-type(2),.fox svg path:nth-of-type(3){filter:drop-shadow(0 1px 0 rgba(255,255,255,.55))}
+.fox svg path:nth-of-type(1){stroke-width:1.15}
+.fox svg path:nth-of-type(2),.fox svg path:nth-of-type(3){stroke-width:1.05}
+.fox svg g circle{filter:drop-shadow(0 2px 2px rgba(93,67,121,.08))}
 .today{border:1px solid rgba(155,126,184,.11);background:linear-gradient(180deg,rgba(255,251,244,.88),rgba(247,240,231,.64)),repeating-linear-gradient(0deg,rgba(129,105,147,.018) 0 1px,transparent 1px 3px);box-shadow:0 10px 28px rgba(96,72,124,.05),inset 0 1px 0 rgba(255,255,255,.76);backdrop-filter:blur(1.2px);position:relative}
 .today:before,.today:after{content:"";position:absolute;top:6px;bottom:6px;width:1px;background:linear-gradient(transparent,rgba(173,147,193,.14),transparent)}
 .today:before{left:5px}.today:after{right:5px}
+.today strong{font-variant:small-caps;letter-spacing:.18em;text-shadow:0 1px 0 rgba(255,255,255,.8)}
 .welcome{letter-spacing:.01em;text-shadow:0 1px 0 rgba(255,255,255,.9)}
 .bellzone:before{content:"";position:absolute;bottom:28px;width:94px;height:18px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(89,65,119,.10),rgba(89,65,119,.02) 60%,transparent 75%);filter:blur(3px)}
 .bell svg{filter:drop-shadow(0 10px 14px rgba(89,65,119,.14)) drop-shadow(0 1px 0 rgba(255,255,255,.68)) saturate(1.05)}
 .bell svg path:first-of-type{filter:drop-shadow(0 0 4px rgba(245,236,255,.6))}
-.arch{box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 -12px 28px rgba(103,79,132,.025)}
+.bell svg circle{filter:drop-shadow(0 1px 1px rgba(81,59,105,.18))}
+.arch{box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 -12px 28px rgba(103,79,132,.025);background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 26%)}
 @media(max-width:760px){.paper:before{inset:2px}.paper:after{background-size:480px 168px;background-position:-16px -18px;width:88px;height:38px;bottom:-26px}.profiles:before,.profiles:after{width:72px;height:72px;background-size:408px 143px;background-position:-297px -8px;top:-10px}.profiles:before{left:-10px}.profiles:after{right:-10px}.entry:after{width:58px;height:48px;background-size:430px 151px;background-position:-116px -3px;top:25px;opacity:.19}.left.entry:after{left:40px}.right.entry:after{right:40px}.entry h3:after{width:10px;margin-left:4px;margin-bottom:3px}.right.entry h3:after{margin-right:4px}.art:before{inset:5px 3px 2px}.gifts .art:after{width:52px;height:50px;background-size:430px 151px;background-position:-237px -19px}.feed .art:after,.dates .art:after{width:40px;height:36px;background-size:430px 151px;background-position:-116px -3px}.center:before{width:150px;height:78px;background-size:430px 151px;background-position:-116px -3px;opacity:.09}.center:after{top:138px;width:132px;height:30px}.today:before,.today:after{top:4px;bottom:4px}.bellzone:before{bottom:20px;width:72px}}
