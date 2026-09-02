@@ -1,6 +1,5 @@
 (()=>{
   const modules={
-    listen:{src:'../assets/v2/art/listen-gramophone.webp',alt:'紫藤与唱片机静物'},
     read:{src:'../assets/v2/art/read-books.webp',alt:'紫藤与书本静物'},
     gifts:{src:'../assets/v2/art/gifts-keepsakes.webp',alt:'信封、礼物、蜡封与珍珠静物'},
     feed:{src:'../assets/v2/art/feeding-tea.webp',alt:'奶茶、茶杯与托盘静物'},
@@ -13,7 +12,7 @@
     if(!host)return;
 
     /* Keep the current scene intact until the finished illustration has decoded.
-       A missing/incomplete art pack must never turn the six destinations blank. */
+       A missing/incomplete art pack must never turn a destination blank. */
     const fallback=document.createElement('span');
     fallback.className='dv2-art-fallback';
     while(host.firstChild)fallback.append(host.firstChild);
