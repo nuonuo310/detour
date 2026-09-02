@@ -1,12 +1,33 @@
 (()=>{
-  const $=(s)=>document.querySelector(s);
-  const set=(s,svg)=>{const n=$(s);if(n)n.innerHTML=svg};
-  const common='stroke="#70568d" stroke-linecap="round" stroke-linejoin="round"';
-  set('.listen .art',`<svg viewBox="0 0 160 130" aria-label="ornate gramophone still life"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f0e8f6"/><stop offset=".5" stop-color="#bea5d4"/><stop offset="1" stop-color="#8f70ae"/></linearGradient><linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4e7ca"/><stop offset=".5" stop-color="#b99e6e"/><stop offset="1" stop-color="#8e744d"/></linearGradient></defs><g ${common} stroke-width="1.1"><ellipse cx="78" cy="116" rx="58" ry="8" fill="#e7dced" opacity=".7"/><rect x="34" y="66" width="74" height="37" rx="7" fill="url(#lg)"/><rect x="39" y="72" width="64" height="25" rx="4" fill="#d8c5e7" opacity=".55"/><circle cx="83" cy="69" r="15" fill="#2f273b"/><circle cx="83" cy="69" r="8" fill="#4f415e"/><circle cx="83" cy="69" r="2.5" fill="#ecd9e9"/><path d="M76 51c18-7 31-23 34-42 13 7 22 25 19 43-13-3-30-2-53-1Z" fill="url(#lg)"/><path d="M109 13c-16 4-27 17-34 38" fill="none" stroke-width="2"/><path d="M75 52c-15 0-27 6-32 16M104 80c12-7 18-18 18-29" fill="none"/><circle cx="123" cy="49" r="4" fill="url(#metal)"/><path d="M123 53v14c0 6-3 10-8 13" fill="none"/><circle cx="115" cy="82" r="3" fill="#a98fc1"/></g><g fill="#c4acd7"><circle cx="26" cy="103" r="5"/><circle cx="32" cy="94" r="4"/><circle cx="134" cy="104" r="5"/><circle cx="140" cy="94" r="4"/></g><g stroke="#879a7e" fill="none" stroke-width="1.2"><path d="M22 111c5-19 12-32 23-43M133 111c-1-17 3-30 12-42"/><path d="M30 91c-5-3-8-6-10-11M137 91c4-4 7-8 9-13"/></g></svg>`);
-  set('.read .art',`<svg viewBox="0 0 160 130" aria-label="ornate books still life"><defs><linearGradient id="book1" x1="0" x2="1"><stop stop-color="#d9c9e7"/><stop offset="1" stop-color="#9b7db9"/></linearGradient></defs><g ${common} stroke-width="1.05"><ellipse cx="82" cy="115" rx="55" ry="7" fill="#e9e0ef" opacity=".75"/><rect x="57" y="20" width="48" height="64" rx="5" fill="url(#book1)" transform="rotate(7 81 52)"/><path d="M65 31h30M64 38h21M64 45h25" fill="none"/><path d="M63 56c9 5 18 5 27 0" fill="none"/><rect x="39" y="72" width="72" height="16" rx="3" fill="#eadff2"/><path d="M45 78h58"/><rect x="31" y="89" width="82" height="16" rx="3" fill="#a98bc7"/><path d="M42 92c13-8 26-9 39 0 12-8 23-7 33 1v9c-11-5-22-5-33 2-13-7-26-7-39-1Z" fill="#fbf7ef"/><path d="M81 93v11"/><path d="M104 29c8 4 13 11 15 21" fill="none"/></g><g fill="#cbb5dc"><circle cx="26" cy="102" r="4.5"/><circle cx="21" cy="93" r="3.5"/><circle cx="124" cy="96" r="4.5"/><circle cx="132" cy="88" r="3.5"/></g><g stroke="#879a7e" fill="none"><path d="M23 108c2-15 8-26 17-34M122 105c4-12 9-21 17-28"/></g></svg>`);
-  set('.gifts .art',`<svg viewBox="0 0 160 130" aria-label="gift envelope and pearls still life"><defs><linearGradient id="giftbox" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d9c4e8"/><stop offset="1" stop-color="#9f82bd"/></linearGradient></defs><g ${common} stroke-width="1.05"><ellipse cx="79" cy="115" rx="57" ry="7" fill="#e9e0ef" opacity=".72"/><rect x="20" y="71" width="46" height="31" rx="3" fill="url(#giftbox)"/><path d="M20 72l23 17 23-17" fill="#eee2f4"/><rect x="55" y="29" width="67" height="46" rx="3" fill="#fbf5ed" transform="rotate(5 88 52)"/><path d="M58 37l30 23 30-18" fill="none"/><circle cx="89" cy="59" r="8" fill="#bd8fa4"/><path d="M84 59c3-5 7-5 10 0-2 5-8 5-10 0Z" fill="#f1d9df"/><rect x="24" y="60" width="32" height="14" rx="2" fill="#c8b1dc"/><path d="M40 60v14M24 67h32"/><path d="M34 60c-7-7-13-6-12-1 1 5 8 4 12 1Zm12 0c7-7 13-6 12-1-1 5-8 4-12 1Z" fill="#e8dbf0"/></g><g fill="#f8f2ea" stroke="#9276aa" stroke-width=".8"><circle cx="74" cy="101" r="3.1"/><circle cx="83" cy="104" r="3.1"/><circle cx="92" cy="106" r="3.1"/><circle cx="101" cy="105" r="3.1"/><circle cx="110" cy="101" r="3.1"/></g><g fill="#c7afd8"><circle cx="126" cy="93" r="4"/><circle cx="132" cy="84" r="3"/></g></svg>`);
-  set('.feed .art',`<svg viewBox="0 0 160 130" aria-label="tea and dessert tray still life"><defs><linearGradient id="drink" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e5d5ef"/><stop offset="1" stop-color="#b798cc"/></linearGradient></defs><g ${common} stroke-width="1.05"><ellipse cx="82" cy="111" rx="60" ry="8" fill="#d8c9dc"/><path d="M48 30h37l-5 65H53Z" fill="url(#drink)"/><path d="M53 44h27M60 30l4-13M73 30l9-15" fill="none"/><circle cx="66" cy="63" r="9" fill="#b89acb"/><circle cx="66" cy="63" r="4" fill="#cfb9dd"/><g fill="#9a78b8" stroke="none"><circle cx="58" cy="81" r="2.4"/><circle cx="66" cy="86" r="2.5"/><circle cx="74" cy="81" r="2.3"/></g><path d="M97 66h30v20H97Z" fill="#faf5ed"/><path d="M127 70c11 0 11 13 0 13" fill="none"/><path d="M101 72h21" opacity=".45"/><rect x="22" y="73" width="28" height="24" rx="2" fill="#f7f0e8" transform="rotate(-5 36 85)"/><path d="M26 80h18M26 85h13" opacity=".45"/><path d="M94 95c7-9 18-9 26 0" fill="#e5d5ea"/><path d="M96 95h22"/></g><g fill="#c8b0da"><circle cx="132" cy="102" r="4"/><circle cx="138" cy="93" r="3"/></g></svg>`);
-  set('.games .art',`<svg viewBox="0 0 160 130" aria-label="game controller cards and die still life"><defs><linearGradient id="pad" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d9c5e8"/><stop offset="1" stop-color="#9b7db9"/></linearGradient></defs><g ${common} stroke-width="1.05"><ellipse cx="80" cy="114" rx="56" ry="7" fill="#e9e0ef" opacity=".74"/><path d="M26 65c7-20 21-29 45-26h20c24-3 40 7 48 28 6 17-3 33-18 32-10-1-17-11-24-20H61c-8 10-15 19-25 20-15 1-18-18-10-34Z" fill="url(#pad)"/><path d="M44 63h20M54 53v20"/><circle cx="106" cy="57" r="4" fill="#fbf7ef"/><circle cx="118" cy="68" r="4" fill="#fbf7ef"/><circle cx="94" cy="74" r="5" fill="#8f70ae"/><circle cx="94" cy="74" r="2" fill="#d9c8e4"/><path d="M42 95l21-12 13 22-21 9Z" fill="#fbf5ed"/><path d="M48 94l8 6 8-10" fill="none"/><rect x="107" y="88" width="24" height="24" rx="3" fill="#f8f2ea"/><circle cx="113" cy="94" r="2" fill="#8f70ae" stroke="none"/><circle cx="125" cy="106" r="2" fill="#8f70ae" stroke="none"/><circle cx="119" cy="100" r="2" fill="#8f70ae" stroke="none"/></g></svg>`);
-  set('.dates .art',`<svg viewBox="0 0 160 130" aria-label="quill letter heart keepsake still life"><defs><linearGradient id="feather" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e9ddf2"/><stop offset="1" stop-color="#9a79ba"/></linearGradient></defs><g ${common} stroke-width="1.05"><ellipse cx="80" cy="114" rx="56" ry="7" fill="#e9e0ef" opacity=".74"/><rect x="28" y="56" width="82" height="49" rx="3" fill="#fbf5ed" transform="rotate(-4 69 80)"/><path d="M34 64l33 23 37-26" fill="none"/><path d="M38 91h29M38 96h21" opacity=".45"/><path d="M112 14c-17 19-27 43-34 73" fill="none" stroke-width="3"/><path d="M112 14c14 8 20 20 15 32-12 3-23 9-34 20" fill="url(#feather)"/><path d="M102 28c7 4 13 8 19 13M98 38c7 4 12 7 18 11M93 49c6 3 11 6 16 9" fill="none" opacity=".55"/><path d="M98 91c5-9 15-9 20 0 5-9 15-9 20 0 0 11-20 21-20 21S98 102 98 91Z" fill="#bd8fa4"/><path d="M114 99c3 2 5 2 8 0" fill="none" stroke="#f5dce3"/></g><g fill="#c7afd8"><circle cx="24" cy="104" r="4"/><circle cx="18" cy="95" r="3"/></g></svg>`);
-  document.documentElement.classList.add('detour-illustrations-v2');
+  const modules={
+    listen:{src:'../assets/v2/art/listen-gramophone.webp',alt:'紫藤与唱片机静物'},
+    read:{src:'../assets/v2/art/read-books.webp',alt:'紫藤与书本静物'},
+    gifts:{src:'../assets/v2/art/gifts-keepsakes.webp',alt:'信封、礼物、蜡封与珍珠静物'},
+    feed:{src:'../assets/v2/art/feeding-tea.webp',alt:'奶茶、茶杯与托盘静物'},
+    games:{src:'../assets/v2/art/games-keepsakes.webp',alt:'手柄、骰子与卡牌静物'},
+    dates:{src:'../assets/v2/art/dates-letter.webp',alt:'羽毛笔、信纸与纪念物静物'}
+  };
+
+  function mount(selector,{src,alt}){
+    const host=document.querySelector(`.${selector} .art`);
+    if(!host)return;
+    host.textContent='';
+    host.classList.add('dv2-art-slot');
+    host.dataset.art=selector;
+    const img=document.createElement('img');
+    img.className='dv2-art-image';
+    img.alt=alt;
+    img.decoding='async';
+    img.loading='eager';
+    img.src=src;
+    img.addEventListener('load',()=>host.classList.add('is-ready'),{once:true});
+    img.addEventListener('error',()=>{
+      host.classList.add('is-missing');
+      img.remove();
+    },{once:true});
+    host.append(img);
+  }
+
+  Object.entries(modules).forEach(([name,asset])=>mount(name,asset));
+  document.documentElement.classList.add('detour-art-assets-v1');
 })();
