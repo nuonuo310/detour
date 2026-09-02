@@ -1,0 +1,24 @@
+.entry .art{transform-style:preserve-3d}
+.entry .art svg{backface-visibility:hidden}
+.listen .art svg circle:nth-of-type(1){filter:drop-shadow(0 0 2px rgba(255,246,235,.42))}
+.listen .art svg path:first-of-type{filter:drop-shadow(0 2px 2px rgba(86,61,110,.08))}
+.read .art svg rect{filter:drop-shadow(0 2px 2px rgba(82,62,102,.055))}
+.read .art svg path{stroke-opacity:.88}
+.gifts .art svg rect:nth-of-type(2){filter:drop-shadow(0 3px 3px rgba(82,61,102,.07))}
+.gifts .art svg circle{filter:drop-shadow(0 1px 2px rgba(119,77,101,.11))}
+.feed .art svg ellipse{filter:drop-shadow(0 4px 5px rgba(84,63,106,.07))}
+.feed .art svg path:nth-of-type(1){filter:drop-shadow(0 1px 1px rgba(255,255,255,.38))}
+.games .art svg path:first-of-type{filter:drop-shadow(0 5px 5px rgba(73,52,103,.08))}
+.games .art svg circle{filter:drop-shadow(0 0 2px rgba(255,255,255,.34))}
+.dates .art svg rect{filter:drop-shadow(0 3px 3px rgba(82,61,102,.06))}
+.dates .art svg path:nth-of-type(2){filter:drop-shadow(0 1px 2px rgba(119,87,145,.08))}
+.fox svg path:nth-of-type(1){filter:drop-shadow(-2px 2px 3px rgba(123,94,148,.08)) drop-shadow(1px -1px 0 rgba(255,255,255,.52))}
+.fox svg path:nth-of-type(2){filter:drop-shadow(2px 3px 4px rgba(123,94,148,.07))}
+.fox svg path:nth-of-type(3),.fox svg path:nth-of-type(4){filter:drop-shadow(0 1px 1px rgba(117,88,141,.05))}
+.fox svg g circle{stroke:rgba(111,82,137,.34);stroke-width:.45}
+.paper,.today{background-blend-mode:screen,normal}
+.today{outline:1px solid rgba(255,255,255,.22);outline-offset:-3px}
+.bell svg path:first-of-type{filter:drop-shadow(-1px 0 1px rgba(255,255,255,.48)) drop-shadow(1px 2px 2px rgba(88,65,112,.10))}
+.bell svg path:nth-of-type(2){filter:drop-shadow(0 2px 2px rgba(88,65,112,.08))}
+.arch{border-color:rgba(123,96,151,.13)}
+@media(max-width:760px){.entry .art svg{filter-opacity:.98}.today{outline-offset:-2px}.fox svg path:nth-of-type(1){filter:drop-shadow(-1px 1px 2px rgba(123,94,148,.07)) drop-shadow(1px -1px 0 rgba(255,255,255,.46))}}
