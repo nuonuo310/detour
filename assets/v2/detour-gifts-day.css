@@ -1,0 +1,11 @@
+/* Detour v2 · 日镜 Gifts static review. The finished layered motion follows after static slot approval. */
+.gifts .dv2-gifts-day-static{position:absolute;left:50%;top:50%;width:100%;height:100%;object-fit:contain;transform:translate(-50%,-50%);pointer-events:none}
+@media(max-width:720px){
+  .gifts .art,.gifts .dv2-art-slot{left:1.5%!important;right:auto!important;top:0!important;width:58%!important;height:116px!important}
+  .gifts .copyblock{position:absolute!important;left:1.5%!important;top:136px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
+  .gifts h3{margin:0!important;text-align:center!important}
+}
+@media(max-width:430px){
+  .gifts .art,.gifts .dv2-art-slot{left:1%!important;width:60%!important;height:118px!important}
+  .gifts .copyblock{left:1%!important;top:138px!important;width:60%!important}
+}
