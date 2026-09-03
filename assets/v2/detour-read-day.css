@@ -16,12 +16,13 @@
 .read .dv2-read-day-flowers-right{left:64.1946%;top:53.429%;width:35.4864%;height:30.5423%;z-index:4;transform-origin:20.6742% 86.1619%}
 @media(max-width:720px){
  .read .art,.read .dv2-read-day-slot{left:auto!important;right:1%!important;top:0!important;width:60%!important;height:116px!important}
- /* Read art stays fixed; align the Read title row visually with the approved Listen title row. */
- .read .copyblock{position:absolute!important;right:1%!important;left:auto!important;top:92px!important;width:60%!important;padding-top:0!important;text-align:center!important;margin:0!important}
+ /* Font styling remains inherited from the same .dv2-entry h3 rule as Listen.
+    Keep the approved Read art fixed; place the label from the visible art edge, not the transparent square bounds. */
+ .read .copyblock{position:absolute!important;right:1%!important;left:auto!important;top:108px!important;width:60%!important;padding-top:0!important;text-align:center!important;margin:0!important}
  .read h3{margin:0!important;text-align:center!important}
 }
 @media(max-width:430px){
  .read .art,.read .dv2-read-day-slot{right:0!important;width:62%!important;height:118px!important}
- .read .copyblock{right:0!important;top:94px!important;width:62%!important}
+ .read .copyblock{right:0!important;top:110px!important;width:62%!important}
 }
 @media(prefers-reduced-motion:reduce){.read .dv2-read-day-fallback,.read .dv2-read-day-static,.read .dv2-read-day-canvas{transition:none}}
