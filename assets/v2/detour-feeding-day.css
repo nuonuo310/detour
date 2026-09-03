@@ -1,0 +1,16 @@
+/* Detour v2 · 日镜 Feeding static review. Source canvas 1254 × 1254; placement is judged from visible artwork, not the transparent square. */
+.feed .dv2-feeding-day-slot{overflow:visible!important;background:none!important;filter:none!important}
+.feed .dv2-feeding-day-fallback{position:absolute;inset:0;display:grid;place-items:center;opacity:.45;transition:opacity .2s ease}
+.feed .dv2-feeding-day-slot.has-static .dv2-feeding-day-fallback{opacity:0;pointer-events:none}
+.feed .dv2-feeding-day-static{position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1/1;object-fit:contain;transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity .24s ease}
+.feed .dv2-feeding-day-slot.has-static .dv2-feeding-day-static{opacity:1}
+@media(max-width:720px){
+ .feed .art,.feed .dv2-feeding-day-slot{left:auto!important;right:3.5%!important;top:0!important;width:58%!important;height:116px!important}
+ .feed .copyblock{position:absolute!important;left:auto!important;right:3.5%!important;top:116px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
+ .feed h3{margin:0!important;text-align:center!important}
+}
+@media(max-width:430px){
+ .feed .art,.feed .dv2-feeding-day-slot{right:3%!important;width:60%!important;height:118px!important}
+ .feed .copyblock{right:3%!important;top:118px!important;width:60%!important}
+}
+@media(prefers-reduced-motion:reduce){.feed .dv2-feeding-day-fallback,.feed .dv2-feeding-day-static{transition:none}}
