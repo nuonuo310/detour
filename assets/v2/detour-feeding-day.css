@@ -16,13 +16,13 @@
 .feed .dv2-feeding-day-flowers-tray{left:17.7033%;top:59.2504%;width:34.051%;height:19.1388%;z-index:3;transform-origin:58.3138% 75%}
 .feed .dv2-feeding-day-flower-saucer{left:79.0271%;top:67.3046%;width:8.8517%;height:8.134%;z-index:4}
 @media(max-width:720px){
- /* Pair Feeding with the frozen Gifts composition: same 116px art box and the same visible-art title baseline. */
- .feed .art,.feed .dv2-feeding-day-slot{left:auto!important;right:3.5%!important;top:-8px!important;width:58%!important;height:116px!important}
- .feed .copyblock{position:absolute!important;left:auto!important;right:3.5%!important;top:100px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
+ /* Preserve the approved Feeding composition; move art + title together to align the second-row title baseline with frozen Gifts. */
+ .feed .art,.feed .dv2-feeding-day-slot{left:auto!important;right:3.5%!important;top:-23px!important;width:58%!important;height:116px!important}
+ .feed .copyblock{position:absolute!important;left:auto!important;right:3.5%!important;top:85px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
  .feed h3{margin:0!important;text-align:center!important}
 }
 @media(max-width:430px){
- .feed .art,.feed .dv2-feeding-day-slot{right:3%!important;top:-8px!important;width:60%!important;height:118px!important}
- .feed .copyblock{right:3%!important;top:100px!important;width:60%!important}
+ .feed .art,.feed .dv2-feeding-day-slot{right:3%!important;top:-23px!important;width:60%!important;height:118px!important}
+ .feed .copyblock{right:3%!important;top:85px!important;width:60%!important}
 }
 @media(prefers-reduced-motion:reduce){.feed .dv2-feeding-day-fallback,.feed .dv2-feeding-day-static,.feed .dv2-feeding-day-canvas{transition:none}}
