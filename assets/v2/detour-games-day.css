@@ -16,11 +16,11 @@
 .games .dv2-games-day-flowers-front{left:33.6523%;top:77.8309%;width:32.6954%;height:18.2616%;z-index:4;transform-origin:74.3902% 56.3319%}
 @media(max-width:720px){
  .games .art,.games .dv2-games-day-slot{left:1.5%!important;right:auto!important;top:0!important;width:58%!important;height:116px!important}
- .games .copyblock{position:absolute!important;left:1.5%!important;top:100px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
+ .games .copyblock{position:absolute!important;left:1.5%!important;top:108px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
  .games h3{margin:0!important;text-align:center!important}
 }
 @media(max-width:430px){
  .games .art,.games .dv2-games-day-slot{left:1%!important;width:60%!important;height:118px!important}
- .games .copyblock{left:1%!important;top:100px!important;width:60%!important}
+ .games .copyblock{left:1%!important;top:108px!important;width:60%!important}
 }
 @media(prefers-reduced-motion:reduce){.games .dv2-games-day-fallback,.games .dv2-games-day-static,.games .dv2-games-day-canvas{transition:none}}
