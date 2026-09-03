@@ -1,9 +1,20 @@
-/* Detour v2 · 日镜 Feeding static review. Source canvas 1254 × 1254; placement is judged from visible artwork, not the transparent square. */
+/* Detour v2 · 日镜 Feeding layered illustration. Geometry follows Feeding v1 manifest (1254 × 1254). */
 .feed .dv2-feeding-day-slot{overflow:visible!important;background:none!important;filter:none!important}
 .feed .dv2-feeding-day-fallback{position:absolute;inset:0;display:grid;place-items:center;opacity:.45;transition:opacity .2s ease}
-.feed .dv2-feeding-day-slot.has-static .dv2-feeding-day-fallback{opacity:0;pointer-events:none}
-.feed .dv2-feeding-day-static{position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1/1;object-fit:contain;transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity .24s ease}
+.feed .dv2-feeding-day-slot.has-static .dv2-feeding-day-fallback,.feed .dv2-feeding-day-slot.is-ready .dv2-feeding-day-fallback{opacity:0;pointer-events:none}
+.feed .dv2-feeding-day-static,.feed .dv2-feeding-day-canvas{position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1/1;transform:translate(-50%,-50%);pointer-events:none;transition:opacity .28s ease}
+.feed .dv2-feeding-day-static{object-fit:contain;opacity:0}.feed .dv2-feeding-day-canvas{opacity:0}
 .feed .dv2-feeding-day-slot.has-static .dv2-feeding-day-static{opacity:1}
+.feed .dv2-feeding-day-slot.is-ready:not(.is-reduced) .dv2-feeding-day-static{opacity:0}
+.feed .dv2-feeding-day-slot.is-ready:not(.is-reduced) .dv2-feeding-day-canvas{opacity:1}
+.feed .dv2-feeding-day-slot.is-ready.is-reduced .dv2-feeding-day-static{opacity:1}
+.feed .dv2-feeding-day-layer{position:absolute;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.feed .dv2-feeding-day-shadow,.feed .dv2-feeding-day-body{inset:0;width:100%;height:100%}
+.feed .dv2-feeding-day-shadow{z-index:0}
+.feed .dv2-feeding-day-branch-right{left:66.7464%;top:25.7576%;width:27.512%;height:29.6651%;z-index:1;transform-origin:38.5507% 91.3978%}
+.feed .dv2-feeding-day-body{z-index:2}
+.feed .dv2-feeding-day-flowers-tray{left:17.7033%;top:59.2504%;width:34.051%;height:19.1388%;z-index:3;transform-origin:58.3138% 75%}
+.feed .dv2-feeding-day-flower-saucer{left:79.0271%;top:67.3046%;width:8.8517%;height:8.134%;z-index:4}
 @media(max-width:720px){
  .feed .art,.feed .dv2-feeding-day-slot{left:auto!important;right:3.5%!important;top:0!important;width:58%!important;height:116px!important}
  .feed .copyblock{position:absolute!important;left:auto!important;right:3.5%!important;top:116px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
@@ -13,4 +24,4 @@
  .feed .art,.feed .dv2-feeding-day-slot{right:3%!important;width:60%!important;height:118px!important}
  .feed .copyblock{right:3%!important;top:118px!important;width:60%!important}
 }
-@media(prefers-reduced-motion:reduce){.feed .dv2-feeding-day-fallback,.feed .dv2-feeding-day-static{transition:none}}
+@media(prefers-reduced-motion:reduce){.feed .dv2-feeding-day-fallback,.feed .dv2-feeding-day-static,.feed .dv2-feeding-day-canvas{transition:none}}
