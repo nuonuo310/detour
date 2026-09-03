@@ -1,14 +1,16 @@
 (()=>{
  const host=document.querySelector('.gifts .art');if(!host)return;
- const base='../assets/v2/art/gifts-day/';
+ const script=document.currentScript;
+ const base=script?new URL('./art/gifts-day/',script.src):new URL('../assets/v2/art/gifts-day/',document.baseURI);
+ const src=name=>new URL(name,base).href;
  const fallback=document.createElement('span');fallback.className='dv2-gifts-day-fallback';while(host.firstChild)fallback.append(host.firstChild);host.append(fallback);host.classList.add('dv2-gifts-day-slot');
- const still=new Image();still.className='dv2-gifts-day-static';still.alt='信封、礼物、蜡封与珍珠静物';still.decoding='async';still.src=base+'day-assembled.webp';host.append(still);
+ const still=new Image();still.className='dv2-gifts-day-static';still.alt='信封、礼物、蜡封与珍珠静物';still.decoding='async';still.src=src('day-assembled.webp');host.append(still);
  const canvas=document.createElement('span');canvas.className='dv2-gifts-day-canvas';host.append(canvas);
  const defs=[
   ['shadow','day-contact-shadow.webp'],['flowers-left','day-flowers-left.webp'],['body','day-body.webp'],['flowers-envelope','day-flowers-envelope.webp'],['sprig-vase','day-sprig-vase.webp'],['vase-front','day-vase-front.webp'],['foreground','day-flowers-foreground.webp']
  ];
  const nodes={};
- const images=defs.map(([name,src])=>new Promise((resolve,reject)=>{const img=new Image();img.className=`dv2-gifts-day-layer dv2-gifts-day-${name}`;img.alt='';img.decoding='async';img.onload=()=>{nodes[name]=img;canvas.append(img);resolve()};img.onerror=reject;img.src=base+src;}));
+ const images=defs.map(([name,file])=>new Promise((resolve,reject)=>{const img=new Image();img.className=`dv2-gifts-day-layer dv2-gifts-day-${name}`;img.alt='';img.decoding='async';img.onload=()=>{nodes[name]=img;canvas.append(img);resolve()};img.onerror=reject;img.src=src(file);}));
  const motion=[['flowers-left',3,.5],['flowers-envelope',2.4,0],['sprig-vase',3,1.2]];
  let raf=0,start=performance.now();const mq=matchMedia('(prefers-reduced-motion: reduce)');
  const stop=()=>{if(raf)cancelAnimationFrame(raf);raf=0};
