@@ -1,7 +1,5 @@
 (()=>{
-  const modules={
-    dates:{src:'../assets/v2/art/dates-letter.webp',alt:'羽毛笔、信纸与纪念物静物'}
-  };
+  const modules={};
   function mount(selector,{src,alt}){
     const host=document.querySelector(`.${selector} .art`);if(!host)return;
     const fallback=document.createElement('span');fallback.className='dv2-art-fallback';while(host.firstChild)fallback.append(host.firstChild);host.append(fallback);
