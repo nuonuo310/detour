@@ -1,11 +1,23 @@
-/* Detour v2 · 日镜 Gifts static review. The finished layered motion follows after static slot approval. */
-.gifts .dv2-gifts-day-static{position:absolute;left:50%;top:50%;width:100%;height:100%;object-fit:contain;transform:translate(-50%,-50%);pointer-events:none}
+/* Detour v2 · 日镜 Gifts layered illustration. Geometry follows Gifts v1 manifest (1254 × 1254). */
+.gifts .dv2-gifts-day-slot{overflow:visible!important;background:none!important;filter:none!important}
+.gifts .dv2-gifts-day-fallback{position:absolute;inset:0;display:grid;place-items:center;opacity:.45;transition:opacity .2s ease}
+.gifts .dv2-gifts-day-slot.has-static .dv2-gifts-day-fallback,.gifts .dv2-gifts-day-slot.is-ready .dv2-gifts-day-fallback{opacity:0;pointer-events:none}
+.gifts .dv2-gifts-day-static,.gifts .dv2-gifts-day-canvas{position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1/1;transform:translate(-50%,-50%);pointer-events:none;transition:opacity .28s ease}
+.gifts .dv2-gifts-day-static{object-fit:contain;opacity:0}.gifts .dv2-gifts-day-canvas{opacity:0}
+.gifts .dv2-gifts-day-slot.has-static .dv2-gifts-day-static{opacity:1}
+.gifts .dv2-gifts-day-slot.is-ready:not(.is-reduced) .dv2-gifts-day-static{opacity:0}
+.gifts .dv2-gifts-day-slot.is-ready:not(.is-reduced) .dv2-gifts-day-canvas{opacity:1}
+.gifts .dv2-gifts-day-slot.is-ready.is-reduced .dv2-gifts-day-static{opacity:1}
+.gifts .dv2-gifts-day-layer{position:absolute;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.gifts .dv2-gifts-day-shadow,.gifts .dv2-gifts-day-body,.gifts .dv2-gifts-day-foreground{inset:0;width:100%;height:100%}
+.gifts .dv2-gifts-day-shadow{z-index:0}.gifts .dv2-gifts-day-flowers-left{left:2.7113%;top:36.8421%;width:19.9362%;height:24.4019%;z-index:1;transform-origin:47.6% 88.8889%}
+.gifts .dv2-gifts-day-body{z-index:2}.gifts .dv2-gifts-day-flowers-envelope{left:22.2488%;top:13.3971%;width:33.6523%;height:21.7703%;z-index:3;transform-origin:51.4218% 82.7839%}
+.gifts .dv2-gifts-day-sprig-vase{left:66.6667%;top:6.2998%;width:13.5566%;height:37.4801%;z-index:4;transform-origin:55.8824% 63.8298%}
+.gifts .dv2-gifts-day-vase-front{left:68.8198%;top:29.3461%;width:10.7656%;height:14.3541%;z-index:5}.gifts .dv2-gifts-day-foreground{z-index:6}
 @media(max-width:720px){
-  .gifts .art,.gifts .dv2-art-slot{left:1.5%!important;right:auto!important;top:0!important;width:58%!important;height:116px!important}
-  .gifts .copyblock{position:absolute!important;left:1.5%!important;top:136px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
-  .gifts h3{margin:0!important;text-align:center!important}
+ .gifts .art,.gifts .dv2-gifts-day-slot{left:1.5%!important;right:auto!important;top:0!important;width:58%!important;height:116px!important}
+ .gifts .copyblock{position:absolute!important;left:1.5%!important;top:136px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
+ .gifts h3{margin:0!important;text-align:center!important}
 }
-@media(max-width:430px){
-  .gifts .art,.gifts .dv2-art-slot{left:1%!important;width:60%!important;height:118px!important}
-  .gifts .copyblock{left:1%!important;top:138px!important;width:60%!important}
-}
+@media(max-width:430px){.gifts .art,.gifts .dv2-gifts-day-slot{left:1%!important;width:60%!important;height:118px!important}.gifts .copyblock{left:1%!important;top:138px!important;width:60%!important}}
+@media(prefers-reduced-motion:reduce){.gifts .dv2-gifts-day-fallback,.gifts .dv2-gifts-day-static,.gifts .dv2-gifts-day-canvas{transition:none}}
