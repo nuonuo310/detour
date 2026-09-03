@@ -1,6 +1,5 @@
 (()=>{
   const modules={
-    feed:{src:'../assets/v2/art/feeding-tea.webp',alt:'奶茶、茶杯与托盘静物'},
     games:{src:'../assets/v2/art/games-keepsakes.webp',alt:'手柄、骰子与卡牌静物'},
     dates:{src:'../assets/v2/art/dates-letter.webp',alt:'羽毛笔、信纸与纪念物静物'}
   };
