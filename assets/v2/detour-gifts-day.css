@@ -15,9 +15,9 @@
 .gifts .dv2-gifts-day-sprig-vase{left:66.6667%;top:6.2998%;width:13.5566%;height:37.4801%;z-index:4;transform-origin:55.8824% 63.8298%}
 .gifts .dv2-gifts-day-vase-front{left:68.8198%;top:29.3461%;width:10.7656%;height:14.3541%;z-index:5}.gifts .dv2-gifts-day-foreground{z-index:6}
 @media(max-width:720px){
- .gifts .art,.gifts .dv2-gifts-day-slot{left:1.5%!important;right:auto!important;top:0!important;width:58%!important;height:116px!important}
- .gifts .copyblock{position:absolute!important;left:1.5%!important;top:136px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
+ .gifts .art,.gifts .dv2-gifts-day-slot{left:3.5%!important;right:auto!important;top:0!important;width:58%!important;height:116px!important}
+ .gifts .copyblock{position:absolute!important;left:3.5%!important;top:112px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
  .gifts h3{margin:0!important;text-align:center!important}
 }
-@media(max-width:430px){.gifts .art,.gifts .dv2-gifts-day-slot{left:1%!important;width:60%!important;height:118px!important}.gifts .copyblock{left:1%!important;top:138px!important;width:60%!important}}
+@media(max-width:430px){.gifts .art,.gifts .dv2-gifts-day-slot{left:3%!important;width:60%!important;height:118px!important}.gifts .copyblock{left:3%!important;top:114px!important;width:60%!important}}
 @media(prefers-reduced-motion:reduce){.gifts .dv2-gifts-day-fallback,.gifts .dv2-gifts-day-static,.gifts .dv2-gifts-day-canvas{transition:none}}
