@@ -1,9 +1,13 @@
 /* Detour v2 · 日镜 Read layered illustration. Internal geometry follows Read v2 manifest (1254 × 1254). */
 .read .dv2-read-day-slot{overflow:visible!important;background:none!important;filter:none!important}
 .read .dv2-read-day-fallback{position:absolute;inset:0;display:grid;place-items:center;opacity:.45;transition:opacity .2s ease}
-.read .dv2-read-day-slot.is-ready .dv2-read-day-fallback{opacity:0;pointer-events:none}
-.read .dv2-read-day-canvas{position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1/1;transform:translate(-50%,-50%);opacity:0;transition:opacity .28s ease;pointer-events:none}
-.read .dv2-read-day-slot.is-ready .dv2-read-day-canvas{opacity:1}
+.read .dv2-read-day-slot.has-static .dv2-read-day-fallback,.read .dv2-read-day-slot.is-ready .dv2-read-day-fallback{opacity:0;pointer-events:none}
+.read .dv2-read-day-static,.read .dv2-read-day-canvas{position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1/1;transform:translate(-50%,-50%);pointer-events:none;transition:opacity .28s ease}
+.read .dv2-read-day-static{object-fit:contain;opacity:0}.read .dv2-read-day-canvas{opacity:0}
+.read .dv2-read-day-slot.has-static .dv2-read-day-static{opacity:1}
+.read .dv2-read-day-slot.is-ready:not(.is-reduced) .dv2-read-day-static{opacity:0}
+.read .dv2-read-day-slot.is-ready:not(.is-reduced) .dv2-read-day-canvas{opacity:1}
+.read .dv2-read-day-slot.is-ready.is-reduced .dv2-read-day-static{opacity:1}
 .read .dv2-read-day-layer{position:absolute;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
 .read .dv2-read-day-shadow,.read .dv2-read-day-books{inset:0;width:100%;height:100%}
 .read .dv2-read-day-shadow{z-index:0}.read .dv2-read-day-books{z-index:1}
@@ -19,4 +23,4 @@
  .read .art,.read .dv2-read-day-slot{right:0!important;width:62%!important;height:118px!important}
  .read .copyblock{right:0!important;top:138px!important;width:62%!important}
 }
-@media(prefers-reduced-motion:reduce){.read .dv2-read-day-fallback,.read .dv2-read-day-canvas{transition:none}}
+@media(prefers-reduced-motion:reduce){.read .dv2-read-day-fallback,.read .dv2-read-day-static,.read .dv2-read-day-canvas{transition:none}}
