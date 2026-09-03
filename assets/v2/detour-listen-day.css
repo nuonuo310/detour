@@ -33,14 +33,14 @@
   .listen .dv2-listen-day-static{filter:drop-shadow(0 7px 10px rgba(83,64,118,.07))}
   /* Mobile composition: keep the still-life on the outer-left and place the label underneath it. */
   .listen .art,.listen .dv2-art-slot{left:-1%!important;right:auto!important;top:0!important;width:58%!important;height:112px!important}
-  .listen .copyblock{position:absolute!important;left:1%!important;top:108px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
+  .listen .copyblock{position:absolute!important;left:1%!important;top:118px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
   .listen h3{margin:0!important}
   /* These two temporary emoji fallbacks are intentionally removed; their finished art arrives later. */
   .gifts .dv2-art-fallback,.feed .dv2-art-fallback{display:none!important}
 }
 @media(max-width:430px){
   .listen .art,.listen .dv2-art-slot{left:-2%!important;width:60%!important;height:116px!important}
-  .listen .copyblock{left:0!important;top:112px!important;width:60%!important}
+  .listen .copyblock{left:0!important;top:124px!important;width:60%!important}
 }
 @media(prefers-reduced-motion:reduce){
   .listen .dv2-listen-day-fallback,.listen .dv2-listen-day-static,.listen .dv2-listen-day-canvas{transition:none}
