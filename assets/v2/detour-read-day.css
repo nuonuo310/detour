@@ -1,0 +1,22 @@
+/* Detour v2 · 日镜 Read layered illustration. Internal geometry follows Read v2 manifest (1254 × 1254). */
+.read .dv2-read-day-slot{overflow:visible!important;background:none!important;filter:none!important}
+.read .dv2-read-day-fallback{position:absolute;inset:0;display:grid;place-items:center;opacity:.45;transition:opacity .2s ease}
+.read .dv2-read-day-slot.is-ready .dv2-read-day-fallback{opacity:0;pointer-events:none}
+.read .dv2-read-day-canvas{position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1/1;transform:translate(-50%,-50%);opacity:0;transition:opacity .28s ease;pointer-events:none}
+.read .dv2-read-day-slot.is-ready .dv2-read-day-canvas{opacity:1}
+.read .dv2-read-day-layer{position:absolute;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.read .dv2-read-day-shadow,.read .dv2-read-day-books{inset:0;width:100%;height:100%}
+.read .dv2-read-day-shadow{z-index:0}.read .dv2-read-day-books{z-index:1}
+.read .dv2-read-day-flowers-left{left:18.8198%;top:41.3078%;width:18.3413%;height:15.7895%;z-index:2;transform-origin:75.2174% 81.8182%}
+.read .dv2-read-day-branch-right{left:73.2855%;top:34.4498%;width:19.9362%;height:32.6954%;z-index:3;transform-origin:19.6% 91.9512%}
+.read .dv2-read-day-flowers-right{left:64.1946%;top:53.429%;width:35.4864%;height:30.5423%;z-index:4;transform-origin:20.6742% 86.1619%}
+@media(max-width:720px){
+ .read .art,.read .dv2-read-day-slot{left:auto!important;right:1%!important;top:0!important;width:60%!important;height:116px!important}
+ .read .copyblock{position:absolute!important;right:1%!important;left:auto!important;top:136px!important;width:60%!important;padding-top:0!important;text-align:center!important;margin:0!important}
+ .read h3{margin:0!important}
+}
+@media(max-width:430px){
+ .read .art,.read .dv2-read-day-slot{right:0!important;width:62%!important;height:118px!important}
+ .read .copyblock{right:0!important;top:138px!important;width:62%!important}
+}
+@media(prefers-reduced-motion:reduce){.read .dv2-read-day-fallback,.read .dv2-read-day-canvas{transition:none}}
