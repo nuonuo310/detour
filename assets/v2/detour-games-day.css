@@ -1,0 +1,26 @@
+/* Detour v2 · 日镜 Games layered illustration. Geometry follows Games v1 manifest (1254 × 1254). */
+.games .dv2-games-day-slot{overflow:visible!important;background:none!important;filter:none!important}
+.games .dv2-games-day-fallback{position:absolute;inset:0;display:grid;place-items:center;opacity:.45;transition:opacity .2s ease}
+.games .dv2-games-day-slot.has-static .dv2-games-day-fallback,.games .dv2-games-day-slot.is-ready .dv2-games-day-fallback{opacity:0;pointer-events:none}
+.games .dv2-games-day-static,.games .dv2-games-day-canvas{position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1/1;transform:translate(-50%,-50%);pointer-events:none;transition:opacity .28s ease}
+.games .dv2-games-day-static{object-fit:contain;opacity:0}.games .dv2-games-day-canvas{opacity:0}
+.games .dv2-games-day-slot.has-static .dv2-games-day-static{opacity:1}
+.games .dv2-games-day-slot.is-ready:not(.is-reduced) .dv2-games-day-static{opacity:0}
+.games .dv2-games-day-slot.is-ready:not(.is-reduced) .dv2-games-day-canvas{opacity:1}
+.games .dv2-games-day-slot.is-ready.is-reduced .dv2-games-day-static{opacity:1}
+.games .dv2-games-day-layer{position:absolute;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.games .dv2-games-day-shadow,.games .dv2-games-day-body{inset:0;width:100%;height:100%}
+.games .dv2-games-day-shadow{z-index:0}.games .dv2-games-day-body{z-index:1}
+.games .dv2-games-day-die{left:5.0239%;top:36.5231%;width:21.4514%;height:21.8501%;z-index:2}
+.games .dv2-games-day-branch-right{left:77.3525%;top:30.7815%;width:21.1324%;height:40.1116%;z-index:3;transform-origin:30.1887% 91.8489%}
+.games .dv2-games-day-flowers-front{left:33.6523%;top:77.8309%;width:32.6954%;height:18.2616%;z-index:4;transform-origin:74.3902% 56.3319%}
+@media(max-width:720px){
+ .games .art,.games .dv2-games-day-slot{left:1.5%!important;right:auto!important;top:0!important;width:58%!important;height:116px!important}
+ .games .copyblock{position:absolute!important;left:1.5%!important;top:100px!important;width:58%!important;padding-top:0!important;text-align:center!important;margin:0!important}
+ .games h3{margin:0!important;text-align:center!important}
+}
+@media(max-width:430px){
+ .games .art,.games .dv2-games-day-slot{left:1%!important;width:60%!important;height:118px!important}
+ .games .copyblock{left:1%!important;top:100px!important;width:60%!important}
+}
+@media(prefers-reduced-motion:reduce){.games .dv2-games-day-fallback,.games .dv2-games-day-static,.games .dv2-games-day-canvas{transition:none}}

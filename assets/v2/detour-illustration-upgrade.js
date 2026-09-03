@@ -1,6 +1,5 @@
 (()=>{
   const modules={
-    games:{src:'../assets/v2/art/games-keepsakes.webp',alt:'手柄、骰子与卡牌静物'},
     dates:{src:'../assets/v2/art/dates-letter.webp',alt:'羽毛笔、信纸与纪念物静物'}
   };
   function mount(selector,{src,alt}){
