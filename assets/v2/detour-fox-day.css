@@ -1,0 +1,13 @@
+.dv2-center .dv2-fox.dv2-fox-v2{position:relative;overflow:visible;pointer-events:none}
+.dv2-center .dv2-fox.dv2-fox-v2>svg{display:none}
+.dv2-fox-v2 .detour-fox{position:relative;width:100%;height:100%;pointer-events:none}
+.dv2-fox-v2 .detour-fox__layer,.dv2-fox-v2 .detour-fox__body-group{position:absolute;inset:0;width:100%;height:100%}
+.dv2-fox-v2 .detour-fox__layer{display:block;object-fit:contain;user-select:none;-webkit-user-drag:none}
+.dv2-fox-v2 .detour-fox__tail{z-index:0;transform-origin:35.49% 82.14%;animation:detour-fox-tail-sway 4s ease-in-out infinite;will-change:transform}
+.dv2-fox-v2 .detour-fox__body-group{z-index:1;transform-origin:57.42% 86.52%;animation:detour-fox-breathe 4s ease-in-out infinite;will-change:transform}
+.dv2-fox-v2 .detour-fox__body{z-index:0}
+.dv2-fox-v2 .detour-fox__butterfly{z-index:1;transform-origin:51.83% 24.88%;animation:detour-fox-butterfly-flutter .8s ease-in-out infinite;will-change:transform}
+@keyframes detour-fox-tail-sway{0%,100%{transform:rotate(-2.4deg)}50%{transform:rotate(2.4deg)}}
+@keyframes detour-fox-breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.0045)}}
+@keyframes detour-fox-butterfly-flutter{0%,100%{transform:scaleX(1) rotate(0)}50%{transform:scaleX(.9) rotate(1.2deg)}}
+@media(prefers-reduced-motion:reduce){.dv2-fox-v2 .detour-fox__tail,.dv2-fox-v2 .detour-fox__body-group,.dv2-fox-v2 .detour-fox__butterfly{animation:none}}
