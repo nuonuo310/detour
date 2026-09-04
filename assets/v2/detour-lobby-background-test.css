@@ -1,0 +1,16 @@
+/* Background-base test only. Keep lobby content, TODAY, modules and ornament layers unchanged. */
+.dv2-lobby{
+  background:
+    radial-gradient(
+      ellipse at 50% 44%,
+      rgba(205,185,238,.28) 0%,
+      rgba(220,207,242,.12) 27%,
+      transparent 48%
+    ),
+    linear-gradient(
+      180deg,
+      #FBF7F1 0%,
+      #F7F1F5 52%,
+      #EEE6F5 100%
+    );
+}
