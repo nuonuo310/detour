@@ -23,4 +23,4 @@
     margin-bottom:-11px;
   }
 }
-@media(prefers-reduced-motion:reduce){.dv2-fox-v2 .detour-fox__tail,.dv2-fox-v2 .detour-fox__body-group,.dv2-fox-v2 .detour-fox__butterfly{animation:none}}
+.dv2-fox-v2.is-paused .detour-fox__tail,.dv2-fox-v2.is-paused .detour-fox__body-group,.dv2-fox-v2.is-paused .detour-fox__butterfly{animation-play-state:paused}\n@media(prefers-reduced-motion:reduce){.dv2-fox-v2 .detour-fox__tail,.dv2-fox-v2 .detour-fox__body-group,.dv2-fox-v2 .detour-fox__butterfly{animation:none}}
