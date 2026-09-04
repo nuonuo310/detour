@@ -1,7 +1,7 @@
-/* Wisteria atmosphere v2 review only.
-   Preferred package asset: detour-wisteria-full-atmosphere-overlay-v2.png.
+/* Wisteria atmosphere v3 review only.
+   Preferred package asset: detour-wisteria-full-atmosphere-overlay-v3.png.
    Render as one full-page, non-interactive atmosphere layer underneath all
-   existing lobby UI. Superseded v1 clusters are intentionally not stacked. */
+   existing lobby UI. Keep v3 at full authored opacity; do not stack v1/v2. */
 .dv2-lobby-wisteria-overlay{
   position:absolute;
   inset:0;
@@ -9,6 +9,7 @@
   width:100%;
   height:100%;
   object-fit:fill;
+  opacity:1;
   pointer-events:none;
   user-select:none;
   -webkit-user-drag:none;
