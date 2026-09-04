@@ -1,52 +1,16 @@
-/* Lobby atmosphere review only.
-   Keep fox, six modules, typography and geometry unchanged.
-   Use the confirmed wisteria overlay as source material, but reveal it only as:
-   strong upper-right wisteria, light upper-left bloom, sparse fading sides.
-   The central ~65% remains bright/open. */
+/* Wisteria atmosphere v2 review.
+   Use the package full-atmosphere overlay as one intact, non-interactive layer
+   below all existing lobby UI. Do not stack the superseded v1 clusters. */
 .dv2-lobby-wisteria-overlay{
   position:absolute;
   inset:0;
-  z-index:8;
+  z-index:0;
   width:100%;
   height:100%;
-  object-fit:fill;
+  object-fit:contain;
+  object-position:50% 0;
   pointer-events:none;
   user-select:none;
   -webkit-user-drag:none;
-  opacity:.62;
-  filter:saturate(.9) contrast(.96);
-  -webkit-mask-image:
-    radial-gradient(ellipse 42% 25% at 100% 0%,#000 0 54%,rgba(0,0,0,.82) 70%,transparent 100%),
-    radial-gradient(ellipse 29% 18% at 0% 2%,rgba(0,0,0,.68) 0 48%,transparent 100%),
-    linear-gradient(90deg,rgba(0,0,0,.28) 0 3%,transparent 12% 88%,rgba(0,0,0,.34) 97% 100%);
-  -webkit-mask-composite:source-over;
-  mask-image:
-    radial-gradient(ellipse 42% 25% at 100% 0%,#000 0 54%,rgba(0,0,0,.82) 70%,transparent 100%),
-    radial-gradient(ellipse 29% 18% at 0% 2%,rgba(0,0,0,.68) 0 48%,transparent 100%),
-    linear-gradient(90deg,rgba(0,0,0,.28) 0 3%,transparent 12% 88%,rgba(0,0,0,.34) 97% 100%);
-  mask-composite:add;
 }
-.dv2-lobby::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  z-index:6;
-  pointer-events:none;
-  background:
-    radial-gradient(ellipse 16% 42% at 0% 44%,rgba(202,184,229,.12),transparent 74%),
-    radial-gradient(ellipse 14% 38% at 100% 48%,rgba(196,176,224,.14),transparent 76%),
-    radial-gradient(ellipse 58% 21% at 50% 92%,rgba(190,168,224,.16) 0%,rgba(211,194,233,.08) 46%,transparent 78%);
-}
-.dv2-lobby::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  z-index:7;
-  pointer-events:none;
-  background:
-    radial-gradient(ellipse 54% 40% at 50% 45%,rgba(220,207,241,.075) 0%,rgba(226,216,243,.035) 42%,transparent 72%),
-    radial-gradient(circle at 31% 30%,rgba(176,147,219,.11) 0 2px,transparent 3px),
-    radial-gradient(circle at 69% 37%,rgba(178,150,221,.09) 0 2px,transparent 3px),
-    radial-gradient(circle at 18% 72%,rgba(186,160,222,.08) 0 1.5px,transparent 2.5px),
-    radial-gradient(circle at 82% 69%,rgba(186,160,222,.08) 0 1.5px,transparent 2.5px);
-}
+.dv2-lobby-top,.dv2-hall{position:relative;z-index:3}
