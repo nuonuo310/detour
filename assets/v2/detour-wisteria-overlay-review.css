@@ -1,4 +1,7 @@
-/* Wisteria overlay review only. No lobby layout/content changes. */
+/* Wisteria atmosphere review only.
+   Reference structure: watercolor concentrated at the outer top corners and
+   sparse side edges; the central ~65% stays open, bright and breathable.
+   Existing lobby content/layout is untouched. */
 .dv2-lobby-wisteria-overlay{
   position:absolute;
   inset:0;
@@ -9,4 +12,28 @@
   pointer-events:none;
   user-select:none;
   -webkit-user-drag:none;
+  opacity:.68;
+  -webkit-mask-image:
+    radial-gradient(ellipse 34% 24% at 0% 0%,#000 0 58%,transparent 100%),
+    radial-gradient(ellipse 34% 24% at 100% 0%,#000 0 58%,transparent 100%),
+    linear-gradient(90deg,#000 0 5%,transparent 14% 86%,#000 95% 100%);
+  -webkit-mask-composite:source-over;
+  mask-image:
+    radial-gradient(ellipse 34% 24% at 0% 0%,#000 0 58%,transparent 100%),
+    radial-gradient(ellipse 34% 24% at 100% 0%,#000 0 58%,transparent 100%),
+    linear-gradient(90deg,#000 0 5%,transparent 14% 86%,#000 95% 100%);
+  mask-composite:add;
+}
+.dv2-lobby::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:7;
+  pointer-events:none;
+  background:radial-gradient(
+    ellipse 58% 42% at 50% 46%,
+    rgba(216,201,239,.10) 0%,
+    rgba(222,210,242,.055) 38%,
+    transparent 72%
+  );
 }
