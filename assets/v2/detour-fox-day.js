@@ -1,0 +1,10 @@
+(()=>{const host=document.querySelector('.dv2-center .dv2-fox');if(!host)return;
+const old=host.querySelector('svg');const wrap=document.createElement('div');wrap.className='detour-fox';wrap.setAttribute('aria-hidden','true');
+const mk=(cls,src)=>{const img=new Image();img.className='detour-fox__layer '+cls;img.alt='';img.decoding='async';img.src=src;return img};
+const tail=mk('detour-fox__tail','../assets/v2/art/fox-day/detour-day-fox-tail-layer-v1.png');
+const group=document.createElement('div');group.className='detour-fox__body-group';
+const body=mk('detour-fox__body','../assets/v2/art/fox-day/detour-day-fox-body-motion-layer-v1.png');
+const butterfly=mk('detour-fox__butterfly','../assets/v2/art/fox-day/detour-day-fox-butterfly-layer-v1.png');
+group.append(body,butterfly);wrap.append(tail,group);
+let loaded=0,failed=false;[tail,body,butterfly].forEach(img=>{img.addEventListener('load',()=>{loaded++;if(loaded===3&&!failed){host.append(wrap);host.classList.add('dv2-fox-v2')}},{once:true});img.addEventListener('error',()=>{failed=true;wrap.remove();host.classList.remove('dv2-fox-v2');if(old)old.style.display=''},{once:true})});
+})();
