@@ -14,11 +14,6 @@ jobs:
       - name: Checkout wisteria runtime
         uses: actions/checkout@v4
 
-      - name: Bring frozen fox assets into runtime workspace
-        run: |
-          git fetch --depth=1 origin visual-v2-day-fox-v2
-          git checkout FETCH_HEAD -- assets/v2/art/fox-day
-
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
 
@@ -81,21 +76,14 @@ jobs:
             const i=document.querySelector('.dv2-lobby-wisteria-overlay');
             return i&&i.complete&&i.naturalWidth>0;
           },{timeout:12000});
-          await page.waitForFunction(()=>{
-            const selectors=['.listen .art','.read .art','.gifts .art','.feed .art','.games .art','.dates .art','.dv2-fox'];
-            return selectors.every(s=>document.querySelector(s));
-          },{timeout:10000});
           await new Promise(r=>setTimeout(r,1800));
 
           const info=await page.evaluate(()=>{
             const i=document.querySelector('.dv2-lobby-wisteria-overlay');
             const l=document.querySelector('.dv2-lobby');
             return {
-              src:i?.getAttribute('src'),
-              naturalWidth:i?.naturalWidth,
-              naturalHeight:i?.naturalHeight,
-              opacity:i?getComputedStyle(i).opacity:null,
-              lobbyHidden:l?.hidden??null,
+              src:i?.getAttribute('src'),naturalWidth:i?.naturalWidth,naturalHeight:i?.naturalHeight,
+              opacity:i?getComputedStyle(i).opacity:null,lobbyHidden:l?.hidden??null,
               listenReady:document.documentElement.classList.contains('detour-listen-day-v1'),
               readReady:document.documentElement.classList.contains('detour-read-day-v2'),
               giftsReady:document.documentElement.classList.contains('detour-gifts-day-v1'),
