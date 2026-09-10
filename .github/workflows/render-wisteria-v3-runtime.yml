@@ -40,21 +40,22 @@ jobs:
           page.on('console', msg => console.log('BROWSER:', msg.type(), msg.text()));
           page.on('pageerror', err => console.error('PAGEERROR:', err.message));
           page.on('requestfailed', req => console.error('REQUESTFAILED:', req.url(), req.failure()?.errorText));
-          const response = await page.goto('http://127.0.0.1:4173/prototype/detour-v2-day-lobby-background-review.html', { waitUntil: 'networkidle0', timeout: 30000 });
+          const response = await page.goto('http://127.0.0.1:4173/prototype/detour-v2-day-lobby-background-review.html', { waitUntil: 'domcontentloaded', timeout: 15000 });
           console.log('HTTP', response?.status());
-          await page.waitForSelector('#detourV2', { timeout: 10000 });
-          await page.waitForSelector('.dv2-lobby', { timeout: 10000 });
+          await page.waitForSelector('#detourV2', { timeout: 15000 });
+          await page.waitForSelector('.dv2-lobby', { timeout: 15000 });
           const skip = await page.$('#dv2Skip');
           if (skip) await skip.click();
           await page.waitForFunction(() => {
             const lobby = document.querySelector('.dv2-lobby');
             return lobby && !lobby.hidden;
-          }, { timeout: 10000 });
-          await page.waitForSelector('.dv2-lobby-wisteria-overlay', { timeout: 10000 });
+          }, { timeout: 15000 });
+          await page.waitForSelector('.dv2-lobby-wisteria-overlay', { timeout: 15000 });
           await page.waitForFunction(() => {
             const img = document.querySelector('.dv2-lobby-wisteria-overlay');
             return img && img.complete && img.naturalWidth > 0;
-          }, { timeout: 10000 });
+          }, { timeout: 15000 });
+          await new Promise(r => setTimeout(r, 1200));
           const info = await page.evaluate(() => {
             const img = document.querySelector('.dv2-lobby-wisteria-overlay');
             const lobby = document.querySelector('.dv2-lobby');
