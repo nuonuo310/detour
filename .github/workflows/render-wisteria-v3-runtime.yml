@@ -30,6 +30,8 @@ jobs:
             --disable-gpu \
             --no-sandbox \
             --hide-scrollbars \
+            --run-all-compositor-stages-before-draw \
+            --virtual-time-budget=6000 \
             --window-size=1280,2400 \
             --screenshot=detour-wisteria-v3-runtime.png \
             http://127.0.0.1:4173/prototype/detour-v2-day-lobby-background-review.html
