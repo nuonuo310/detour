@@ -11,22 +11,64 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Checkout exact overlay branch
+      - name: Checkout full recovery branch
         uses: actions/checkout@v4
         with:
-          ref: visual-v2-day-wisteria-overlay-test
+          ref: visual-v2-day-wisteria-v3-full-recovery
 
-      - name: Assemble isolated lobby render
+      - name: Assemble full static lobby
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path('prototype/detour-v2-three-screen.html')
           html=p.read_text(encoding='utf-8')
-          head='''<link rel="stylesheet" href="../assets/v2/detour-responsive-composition.css"><link rel="stylesheet" href="../assets/v2/detour-art-slots.css"><link rel="stylesheet" href="../assets/v2/detour-lobby-background-test.css"><link rel="stylesheet" href="../assets/v2/detour-wisteria-overlay-review.css">'''
-          body='''<script src="../assets/v2/detour-wisteria-overlay-review.js"></script>'''
+          head='''
+          <link rel="stylesheet" href="../assets/v2/detour-responsive-composition.css">
+          <link rel="stylesheet" href="../assets/v2/detour-art-slots.css">
+          <link rel="stylesheet" href="../assets/v2/detour-listen-day.css">
+          <link rel="stylesheet" href="../assets/v2/detour-read-day.css">
+          <link rel="stylesheet" href="../assets/v2/detour-gifts-day.css">
+          <link rel="stylesheet" href="../assets/v2/detour-feeding-day.css">
+          <link rel="stylesheet" href="../assets/v2/detour-games-day.css">
+          <link rel="stylesheet" href="../assets/v2/detour-dates-day.css">
+          <link rel="stylesheet" href="../assets/v2/detour-fox-day.css">
+          <link rel="stylesheet" href="../assets/v2/detour-lobby-background-test.css">
+          <link rel="stylesheet" href="../assets/v2/detour-wisteria-overlay-review.css">
+          <style>
+          .dv2-fox-v2 .detour-fox__static{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
+          </style>
+          '''
+          body='''
+          <script src="../assets/v2/detour-wisteria-overlay-review.js"></script>
+          <script>
+          (()=>{
+            const defs=[
+              ['.listen .art','dv2-listen-day-slot','dv2-listen-day-static','../assets/v2/art/listen-day/day-assembled.webp','has-static'],
+              ['.read .art','dv2-read-day-slot','dv2-read-day-static','../assets/v2/art/read-day/day-assembled.webp','has-static'],
+              ['.gifts .art','dv2-gifts-day-slot','dv2-gifts-day-static','../assets/v2/art/gifts-day/day-assembled.webp','has-static'],
+              ['.feed .art','dv2-feeding-day-slot','dv2-feeding-day-static','../assets/v2/art/feeding-day/day-assembled.webp','has-static'],
+              ['.games .art','dv2-games-day-slot','dv2-games-day-static','../assets/v2/art/games-day/day-assembled.webp','has-static'],
+              ['.dates .art','dv2-dates-day-slot','dv2-dates-day-static','../assets/v2/art/dates-day/day-assembled.webp','has-static']
+            ];
+            for(const [sel,slot,cls,src,ready] of defs){
+              const host=document.querySelector(sel); if(!host) continue;
+              host.replaceChildren(); host.classList.add(slot,ready);
+              const img=new Image(); img.className=cls; img.alt=''; img.src=src; host.append(img);
+            }
+            const host=document.querySelector('.dv2-center .dv2-fox');
+            if(host){
+              host.classList.add('dv2-fox-v2');
+              host.replaceChildren();
+              const wrap=document.createElement('div'); wrap.className='detour-fox';
+              const img=new Image(); img.className='detour-fox__static'; img.alt='';
+              img.src='../assets/v2/art/fox-day/detour-day-fox-static-transparent-v1.png';
+              wrap.append(img); host.append(wrap);
+            }
+          })();
+          </script>
+          '''
           html=html.replace('</head>',head+'</head>').replace('</body>',body+'</body>')
-          Path('prototype/runtime-wisteria-only.html').write_text(html,encoding='utf-8')
-          print('ASSEMBLED', 'id="detourV2"' in html, 'dv2-lobby' in html, len(html.encode('utf-8')))
+          Path('prototype/runtime-full-static.html').write_text(html,encoding='utf-8')
           PY
 
       - name: Setup Chrome
@@ -40,16 +82,16 @@ jobs:
           python3 -m http.server 4173 > /tmp/detour-http.log 2>&1 &
           sleep 2
 
-      - name: Render isolated wisteria lobby in Chromium
+      - name: Render full static lobby in Chromium
         run: |
-          cat > render-wisteria.mjs <<'EOF'
+          cat > render-full.mjs <<'EOF'
           import puppeteer from 'puppeteer-core';
           const browser=await puppeteer.launch({executablePath:process.env.CHROME_PATH,headless:true,args:['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage']});
           const page=await browser.newPage();
           await page.setViewport({width:1280,height:900,deviceScaleFactor:1});
           page.on('pageerror',e=>console.error('PAGEERROR',e.message));
           page.on('response',r=>{if(r.status()>=400)console.error('HTTPERR',r.status(),r.url())});
-          const res=await page.goto('http://127.0.0.1:4173/prototype/runtime-wisteria-only.html',{waitUntil:'domcontentloaded',timeout:20000});
+          const res=await page.goto('http://127.0.0.1:4173/prototype/runtime-full-static.html',{waitUntil:'domcontentloaded',timeout:20000});
           console.log('HTTP',res?.status());
           await page.waitForSelector('#detourV2',{timeout:10000});
           await page.evaluate(()=>{
@@ -57,23 +99,26 @@ jobs:
             for(const s of document.querySelectorAll('.dv2-scene')) s.hidden=s!==lobby;
             if(lobby){lobby.hidden=false; lobby.style.minHeight='900px';}
           });
-          await page.waitForSelector('.dv2-lobby-wisteria-overlay',{visible:true,timeout:10000});
-          await page.waitForFunction(()=>{const i=document.querySelector('.dv2-lobby-wisteria-overlay');return i&&i.complete&&i.naturalWidth>0},{timeout:10000});
-          const info=await page.evaluate(()=>{const i=document.querySelector('.dv2-lobby-wisteria-overlay');return {src:i?.getAttribute('src'),w:i?.naturalWidth,h:i?.naturalHeight,opacity:i?getComputedStyle(i).opacity:null};});
-          console.log('WISTERIA_INFO',JSON.stringify(info));
-          if(!info.src?.includes('detour-wisteria-full-atmosphere-overlay-v3.png')) throw new Error('wrong source');
-          if(info.opacity!=='1') throw new Error('opacity not 1');
-          if(!info.w||!info.h) throw new Error('image missing');
+          await page.waitForFunction(()=>{
+            const sels=['.dv2-lobby-wisteria-overlay','.dv2-listen-day-static','.dv2-read-day-static','.dv2-gifts-day-static','.dv2-feeding-day-static','.dv2-games-day-static','.dv2-dates-day-static','.detour-fox__static'];
+            return sels.every(s=>{const i=document.querySelector(s);return i&&i.complete&&i.naturalWidth>0});
+          },{timeout:15000});
+          const info=await page.evaluate(()=>({
+            fox:[document.querySelector('.detour-fox__static')?.naturalWidth,document.querySelector('.detour-fox__static')?.naturalHeight],
+            modules:[...document.querySelectorAll('.dv2-listen-day-static,.dv2-read-day-static,.dv2-gifts-day-static,.dv2-feeding-day-static,.dv2-games-day-static,.dv2-dates-day-static')].map(i=>[i.className,i.naturalWidth,i.naturalHeight]),
+            wisteria:[document.querySelector('.dv2-lobby-wisteria-overlay')?.naturalWidth,document.querySelector('.dv2-lobby-wisteria-overlay')?.naturalHeight]
+          }));
+          console.log('FULL_INFO',JSON.stringify(info));
           const lobby=await page.$('.dv2-lobby');
-          await lobby.screenshot({path:'detour-wisteria-v3-isolated-runtime.png'});
+          await lobby.screenshot({path:'detour-wisteria-v3-full-static-runtime.png'});
           await browser.close();
           EOF
-          CHROME_PATH="$(which google-chrome)" timeout 45s node render-wisteria.mjs
-          test -s detour-wisteria-v3-isolated-runtime.png
+          CHROME_PATH="$(which google-chrome)" timeout 50s node render-full.mjs
+          test -s detour-wisteria-v3-full-static-runtime.png
 
-      - name: Upload isolated render
+      - name: Upload full static render
         uses: actions/upload-artifact@v4
         with:
-          name: detour-wisteria-v3-isolated-runtime
-          path: detour-wisteria-v3-isolated-runtime.png
+          name: detour-wisteria-v3-full-static-runtime
+          path: detour-wisteria-v3-full-static-runtime.png
           if-no-files-found: error
