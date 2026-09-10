@@ -34,36 +34,23 @@ jobs:
           <link rel="stylesheet" href="../assets/v2/detour-fox-day.css">
           <link rel="stylesheet" href="../assets/v2/detour-lobby-background-test.css">
           <link rel="stylesheet" href="../assets/v2/detour-wisteria-overlay-review.css">
-          <style>
-          .dv2-fox-v2 .detour-fox__static{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
-          </style>
+          <style>.dv2-fox-v2 .detour-fox__static{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}</style>
           '''
           body='''
           <script src="../assets/v2/detour-wisteria-overlay-review.js"></script>
           <script>
           (()=>{
             const defs=[
-              ['.listen .art','dv2-listen-day-slot','dv2-listen-day-static','../assets/v2/art/listen-day/day-assembled.webp','has-static'],
-              ['.read .art','dv2-read-day-slot','dv2-read-day-static','../assets/v2/art/read-day/day-assembled.webp','has-static'],
-              ['.gifts .art','dv2-gifts-day-slot','dv2-gifts-day-static','../assets/v2/art/gifts-day/day-assembled.webp','has-static'],
-              ['.feed .art','dv2-feeding-day-slot','dv2-feeding-day-static','../assets/v2/art/feeding-day/day-assembled.webp','has-static'],
-              ['.games .art','dv2-games-day-slot','dv2-games-day-static','../assets/v2/art/games-day/day-assembled.webp','has-static'],
-              ['.dates .art','dv2-dates-day-slot','dv2-dates-day-static','../assets/v2/art/dates-day/day-assembled.webp','has-static']
+              ['.listen .art','dv2-listen-day-slot','dv2-listen-day-static','../assets/v2/art/listen-day/day-assembled.webp'],
+              ['.read .art','dv2-read-day-slot','dv2-read-day-static','../assets/v2/art/read-day/day-assembled.webp'],
+              ['.gifts .art','dv2-gifts-day-slot','dv2-gifts-day-static','../assets/v2/art/gifts-day/day-assembled.webp'],
+              ['.feed .art','dv2-feeding-day-slot','dv2-feeding-day-static','../assets/v2/art/feeding-day/day-assembled.webp'],
+              ['.games .art','dv2-games-day-slot','dv2-games-day-static','../assets/v2/art/games-day/day-assembled.webp'],
+              ['.dates .art','dv2-dates-day-slot','dv2-dates-day-static','../assets/v2/art/dates-day/day-assembled.webp']
             ];
-            for(const [sel,slot,cls,src,ready] of defs){
-              const host=document.querySelector(sel); if(!host) continue;
-              host.replaceChildren(); host.classList.add(slot,ready);
-              const img=new Image(); img.className=cls; img.alt=''; img.src=src; host.append(img);
-            }
+            for(const [sel,slot,cls,src] of defs){const host=document.querySelector(sel);if(!host)continue;host.replaceChildren();host.classList.add(slot,'has-static');const img=new Image();img.className=cls;img.alt='';img.src=src;host.append(img);}
             const host=document.querySelector('.dv2-center .dv2-fox');
-            if(host){
-              host.classList.add('dv2-fox-v2');
-              host.replaceChildren();
-              const wrap=document.createElement('div'); wrap.className='detour-fox';
-              const img=new Image(); img.className='detour-fox__static'; img.alt='';
-              img.src='../assets/v2/art/fox-day/detour-day-fox-static-transparent-v1.png';
-              wrap.append(img); host.append(wrap);
-            }
+            if(host){host.classList.add('dv2-fox-v2');host.replaceChildren();const wrap=document.createElement('div');wrap.className='detour-fox';const img=new Image();img.className='detour-fox__static';img.alt='';img.src='../assets/v2/art/fox-day/detour-day-fox-static-transparent-v1.png';wrap.append(img);host.append(wrap);}
           })();
           </script>
           '''
@@ -86,6 +73,7 @@ jobs:
         run: |
           cat > render-full.mjs <<'EOF'
           import puppeteer from 'puppeteer-core';
+          import fs from 'node:fs';
           const browser=await puppeteer.launch({executablePath:process.env.CHROME_PATH,headless:true,args:['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage']});
           const page=await browser.newPage();
           await page.setViewport({width:1280,height:900,deviceScaleFactor:1});
@@ -94,31 +82,24 @@ jobs:
           const res=await page.goto('http://127.0.0.1:4173/prototype/runtime-full-static.html',{waitUntil:'domcontentloaded',timeout:20000});
           console.log('HTTP',res?.status());
           await page.waitForSelector('#detourV2',{timeout:10000});
-          await page.evaluate(()=>{
-            const lobby=document.querySelector('.dv2-lobby');
-            for(const s of document.querySelectorAll('.dv2-scene')) s.hidden=s!==lobby;
-            if(lobby){lobby.hidden=false; lobby.style.minHeight='900px';}
-          });
-          await page.waitForFunction(()=>{
-            const sels=['.dv2-lobby-wisteria-overlay','.dv2-listen-day-static','.dv2-read-day-static','.dv2-gifts-day-static','.dv2-feeding-day-static','.dv2-games-day-static','.dv2-dates-day-static','.detour-fox__static'];
-            return sels.every(s=>{const i=document.querySelector(s);return i&&i.complete&&i.naturalWidth>0});
-          },{timeout:15000});
-          const info=await page.evaluate(()=>({
-            fox:[document.querySelector('.detour-fox__static')?.naturalWidth,document.querySelector('.detour-fox__static')?.naturalHeight],
-            modules:[...document.querySelectorAll('.dv2-listen-day-static,.dv2-read-day-static,.dv2-gifts-day-static,.dv2-feeding-day-static,.dv2-games-day-static,.dv2-dates-day-static')].map(i=>[i.className,i.naturalWidth,i.naturalHeight]),
-            wisteria:[document.querySelector('.dv2-lobby-wisteria-overlay')?.naturalWidth,document.querySelector('.dv2-lobby-wisteria-overlay')?.naturalHeight]
-          }));
-          console.log('FULL_INFO',JSON.stringify(info));
+          await page.evaluate(()=>{const lobby=document.querySelector('.dv2-lobby');for(const s of document.querySelectorAll('.dv2-scene'))s.hidden=s!==lobby;if(lobby){lobby.hidden=false;lobby.style.minHeight='900px';}});
+          await new Promise(r=>setTimeout(r,5000));
+          const sels=['.dv2-lobby-wisteria-overlay','.dv2-listen-day-static','.dv2-read-day-static','.dv2-gifts-day-static','.dv2-feeding-day-static','.dv2-games-day-static','.dv2-dates-day-static','.detour-fox__static'];
+          const info=await page.evaluate(sels=>sels.map(s=>{const i=document.querySelector(s);return {selector:s,exists:!!i,src:i?.getAttribute('src')||null,complete:i?.complete??null,w:i?.naturalWidth??null,h:i?.naturalHeight??null,display:i?getComputedStyle(i).display:null,opacity:i?getComputedStyle(i).opacity:null}}),sels);
+          console.log('ASSET_INFO',JSON.stringify(info));
+          fs.writeFileSync('asset-info.json',JSON.stringify(info,null,2));
           const lobby=await page.$('.dv2-lobby');
-          await lobby.screenshot({path:'detour-wisteria-v3-full-static-runtime.png'});
+          if(lobby) await lobby.screenshot({path:'detour-wisteria-v3-full-static-runtime.png'});
           await browser.close();
           EOF
           CHROME_PATH="$(which google-chrome)" timeout 50s node render-full.mjs
-          test -s detour-wisteria-v3-full-static-runtime.png
 
       - name: Upload full static render
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: detour-wisteria-v3-full-static-runtime
-          path: detour-wisteria-v3-full-static-runtime.png
+          path: |
+            detour-wisteria-v3-full-static-runtime.png
+            asset-info.json
           if-no-files-found: error
