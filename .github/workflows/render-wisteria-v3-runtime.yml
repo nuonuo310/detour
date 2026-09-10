@@ -20,42 +20,70 @@ jobs:
       - name: Install renderer
         run: npm install --no-save puppeteer-core@24
 
-      - name: Serve review page
+      - name: Serve repo
         run: |
           python3 -m http.server 4173 > /tmp/detour-http.log 2>&1 &
-          echo $! > /tmp/detour-http.pid
           sleep 2
 
-      - name: Render actual review page
+      - name: Render actual lobby from repo code
         run: |
           cat > render-runtime.mjs <<'EOF'
           import puppeteer from 'puppeteer-core';
           const browser = await puppeteer.launch({
-            executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome',
+            executablePath: process.env.CHROME_PATH,
             headless: true,
             args: ['--no-sandbox','--disable-setuid-sandbox']
           });
           const page = await browser.newPage();
           await page.setViewport({ width: 1280, height: 1600, deviceScaleFactor: 1 });
-          page.on('console', msg => console.log('BROWSER:', msg.type(), msg.text()));
           page.on('pageerror', err => console.error('PAGEERROR:', err.message));
-          page.on('requestfailed', req => console.error('REQUESTFAILED:', req.url(), req.failure()?.errorText));
-          const response = await page.goto('http://127.0.0.1:4173/prototype/detour-v2-day-lobby-background-review.html', { waitUntil: 'domcontentloaded', timeout: 15000 });
+          page.on('response', res => { if (res.status() >= 400) console.error('HTTPERR', res.status(), res.url()); });
+          const response = await page.goto('http://127.0.0.1:4173/prototype/detour-v2-three-screen.html', { waitUntil: 'domcontentloaded', timeout: 15000 });
           console.log('HTTP', response?.status());
-          await page.waitForSelector('#detourV2', { timeout: 15000 });
-          await page.waitForSelector('.dv2-lobby', { timeout: 15000 });
+          await page.waitForSelector('#detourV2', { timeout: 10000 });
+
+          const styles = [
+            'assets/v2/detour-responsive-composition.css',
+            'assets/v2/detour-art-slots.css',
+            'assets/v2/detour-listen-day.css',
+            'assets/v2/detour-read-day.css',
+            'assets/v2/detour-gifts-day.css',
+            'assets/v2/detour-feeding-day.css',
+            'assets/v2/detour-games-day.css',
+            'assets/v2/detour-dates-day.css',
+            'assets/v2/detour-fox-day.css',
+            'assets/v2/detour-lobby-background-test.css',
+            'assets/v2/detour-wisteria-overlay-review.css'
+          ];
+          for (const path of styles) await page.addStyleTag({ path });
+
+          const scripts = [
+            'assets/v2/detour-illustration-upgrade.js',
+            'assets/v2/detour-listen-day.js',
+            'assets/v2/detour-read-day.js',
+            'assets/v2/detour-gifts-day.js',
+            'assets/v2/detour-feeding-day.js',
+            'assets/v2/detour-games-day.js',
+            'assets/v2/detour-dates-day.js',
+            'assets/v2/detour-fox-day.js',
+            'assets/v2/detour-wisteria-overlay-review.js'
+          ];
+          for (const path of scripts) await page.addScriptTag({ path });
+
           const skip = await page.$('#dv2Skip');
           if (skip) await skip.click();
-          await page.waitForFunction(() => {
+          await page.evaluate(() => {
+            const scenes = [...document.querySelectorAll('.dv2-scene')];
             const lobby = document.querySelector('.dv2-lobby');
-            return lobby && !lobby.hidden;
-          }, { timeout: 15000 });
-          await page.waitForSelector('.dv2-lobby-wisteria-overlay', { timeout: 15000 });
+            for (const scene of scenes) scene.hidden = scene !== lobby;
+          });
+          await page.waitForSelector('.dv2-lobby-wisteria-overlay', { visible: true, timeout: 10000 });
           await page.waitForFunction(() => {
             const img = document.querySelector('.dv2-lobby-wisteria-overlay');
             return img && img.complete && img.naturalWidth > 0;
-          }, { timeout: 15000 });
-          await new Promise(r => setTimeout(r, 1200));
+          }, { timeout: 10000 });
+          await new Promise(r => setTimeout(r, 1000));
+
           const info = await page.evaluate(() => {
             const img = document.querySelector('.dv2-lobby-wisteria-overlay');
             const lobby = document.querySelector('.dv2-lobby');
@@ -64,11 +92,19 @@ jobs:
               naturalWidth: img?.naturalWidth,
               naturalHeight: img?.naturalHeight,
               opacity: img ? getComputedStyle(img).opacity : null,
-              lobbyHidden: lobby?.hidden ?? null
+              lobbyHidden: lobby?.hidden ?? null,
+              listenCount: document.querySelectorAll('.listen').length,
+              readCount: document.querySelectorAll('.read').length,
+              foxCount: document.querySelectorAll('.dv2-fox').length
             };
           });
           console.log('RUNTIME_INFO', JSON.stringify(info));
-          await page.screenshot({ path: 'detour-wisteria-v3-runtime.png', fullPage: true });
+          if (!info.src?.includes('detour-wisteria-full-atmosphere-overlay-v3.png')) throw new Error('wrong wisteria source');
+          if (info.opacity !== '1') throw new Error('wisteria opacity is not 1');
+          if (!info.naturalWidth || !info.naturalHeight) throw new Error('wisteria image did not load');
+
+          const lobby = await page.$('.dv2-lobby');
+          await lobby.screenshot({ path: 'detour-wisteria-v3-runtime.png', captureBeyondViewport: true });
           await browser.close();
           EOF
           CHROME_PATH="$(which google-chrome)" node render-runtime.mjs
