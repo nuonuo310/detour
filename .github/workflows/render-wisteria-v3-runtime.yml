@@ -17,6 +17,9 @@ jobs:
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
 
+      - name: Install renderer
+        run: npm install --no-save puppeteer-core@24
+
       - name: Serve review page
         run: |
           python3 -m http.server 4173 > /tmp/detour-http.log 2>&1 &
@@ -25,16 +28,49 @@ jobs:
 
       - name: Render actual review page
         run: |
-          google-chrome \
-            --headless \
-            --disable-gpu \
-            --no-sandbox \
-            --hide-scrollbars \
-            --run-all-compositor-stages-before-draw \
-            --virtual-time-budget=6000 \
-            --window-size=1280,2400 \
-            --screenshot=detour-wisteria-v3-runtime.png \
-            http://127.0.0.1:4173/prototype/detour-v2-day-lobby-background-review.html
+          cat > /tmp/render.mjs <<'EOF'
+          import puppeteer from 'puppeteer-core';
+          const browser = await puppeteer.launch({
+            executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome',
+            headless: true,
+            args: ['--no-sandbox','--disable-setuid-sandbox']
+          });
+          const page = await browser.newPage();
+          await page.setViewport({ width: 1280, height: 1600, deviceScaleFactor: 1 });
+          page.on('console', msg => console.log('BROWSER:', msg.type(), msg.text()));
+          page.on('pageerror', err => console.error('PAGEERROR:', err.message));
+          page.on('requestfailed', req => console.error('REQUESTFAILED:', req.url(), req.failure()?.errorText));
+          const response = await page.goto('http://127.0.0.1:4173/prototype/detour-v2-day-lobby-background-review.html', { waitUntil: 'networkidle0', timeout: 30000 });
+          console.log('HTTP', response?.status());
+          await page.waitForSelector('#detourV2', { timeout: 10000 });
+          await page.waitForSelector('.dv2-lobby', { timeout: 10000 });
+          const skip = await page.$('#dv2Skip');
+          if (skip) await skip.click();
+          await page.waitForFunction(() => {
+            const lobby = document.querySelector('.dv2-lobby');
+            return lobby && !lobby.hidden;
+          }, { timeout: 10000 });
+          await page.waitForSelector('.dv2-lobby-wisteria-overlay', { timeout: 10000 });
+          await page.waitForFunction(() => {
+            const img = document.querySelector('.dv2-lobby-wisteria-overlay');
+            return img && img.complete && img.naturalWidth > 0;
+          }, { timeout: 10000 });
+          const info = await page.evaluate(() => {
+            const img = document.querySelector('.dv2-lobby-wisteria-overlay');
+            const lobby = document.querySelector('.dv2-lobby');
+            return {
+              src: img?.getAttribute('src'),
+              naturalWidth: img?.naturalWidth,
+              naturalHeight: img?.naturalHeight,
+              opacity: img ? getComputedStyle(img).opacity : null,
+              lobbyHidden: lobby?.hidden ?? null
+            };
+          });
+          console.log('RUNTIME_INFO', JSON.stringify(info));
+          await page.screenshot({ path: 'detour-wisteria-v3-runtime.png', fullPage: true });
+          await browser.close();
+          EOF
+          CHROME_PATH="$(which google-chrome)" node /tmp/render.mjs
           test -s detour-wisteria-v3-runtime.png
 
       - name: Upload render
