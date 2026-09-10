@@ -9,107 +9,52 @@ on:
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 6
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
-
       - name: Install renderer
         run: npm install --no-save puppeteer-core@24
-
       - name: Serve repo
         run: |
           python3 -m http.server 4173 > /tmp/detour-http.log 2>&1 &
           sleep 2
-
       - name: Render actual lobby from repo code
         run: |
           cat > render-runtime.mjs <<'EOF'
           import puppeteer from 'puppeteer-core';
-          const browser = await puppeteer.launch({
-            executablePath: process.env.CHROME_PATH,
-            headless: true,
-            args: ['--no-sandbox','--disable-setuid-sandbox']
-          });
+          const withTimeout=(p,label,ms=8000)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+' timeout')),ms))]);
+          const browser = await puppeteer.launch({executablePath:process.env.CHROME_PATH,headless:true,args:['--no-sandbox','--disable-setuid-sandbox']});
           const page = await browser.newPage();
-          await page.setViewport({ width: 1280, height: 1600, deviceScaleFactor: 1 });
-          page.on('pageerror', err => console.error('PAGEERROR:', err.message));
-          page.on('response', res => { if (res.status() >= 400) console.error('HTTPERR', res.status(), res.url()); });
-          const response = await page.goto('http://127.0.0.1:4173/prototype/detour-v2-three-screen.html', { waitUntil: 'domcontentloaded', timeout: 15000 });
-          console.log('HTTP', response?.status());
-          await page.waitForSelector('#detourV2', { timeout: 10000 });
-
-          const styles = [
-            'assets/v2/detour-responsive-composition.css',
-            'assets/v2/detour-art-slots.css',
-            'assets/v2/detour-listen-day.css',
-            'assets/v2/detour-read-day.css',
-            'assets/v2/detour-gifts-day.css',
-            'assets/v2/detour-feeding-day.css',
-            'assets/v2/detour-games-day.css',
-            'assets/v2/detour-dates-day.css',
-            'assets/v2/detour-fox-day.css',
-            'assets/v2/detour-lobby-background-test.css',
-            'assets/v2/detour-wisteria-overlay-review.css'
-          ];
-          for (const path of styles) await page.addStyleTag({ path });
-
-          const scripts = [
-            'assets/v2/detour-illustration-upgrade.js',
-            'assets/v2/detour-listen-day.js',
-            'assets/v2/detour-read-day.js',
-            'assets/v2/detour-gifts-day.js',
-            'assets/v2/detour-feeding-day.js',
-            'assets/v2/detour-games-day.js',
-            'assets/v2/detour-dates-day.js',
-            'assets/v2/detour-fox-day.js',
-            'assets/v2/detour-wisteria-overlay-review.js'
-          ];
-          for (const path of scripts) await page.addScriptTag({ path });
-
-          const skip = await page.$('#dv2Skip');
-          if (skip) await skip.click();
-          await page.evaluate(() => {
-            const scenes = [...document.querySelectorAll('.dv2-scene')];
-            const lobby = document.querySelector('.dv2-lobby');
-            for (const scene of scenes) scene.hidden = scene !== lobby;
-          });
-          await page.waitForSelector('.dv2-lobby-wisteria-overlay', { visible: true, timeout: 10000 });
-          await page.waitForFunction(() => {
-            const img = document.querySelector('.dv2-lobby-wisteria-overlay');
-            return img && img.complete && img.naturalWidth > 0;
-          }, { timeout: 10000 });
-          await new Promise(r => setTimeout(r, 1000));
-
-          const info = await page.evaluate(() => {
-            const img = document.querySelector('.dv2-lobby-wisteria-overlay');
-            const lobby = document.querySelector('.dv2-lobby');
-            return {
-              src: img?.getAttribute('src'),
-              naturalWidth: img?.naturalWidth,
-              naturalHeight: img?.naturalHeight,
-              opacity: img ? getComputedStyle(img).opacity : null,
-              lobbyHidden: lobby?.hidden ?? null,
-              listenCount: document.querySelectorAll('.listen').length,
-              readCount: document.querySelectorAll('.read').length,
-              foxCount: document.querySelectorAll('.dv2-fox').length
-            };
-          });
-          console.log('RUNTIME_INFO', JSON.stringify(info));
-          if (!info.src?.includes('detour-wisteria-full-atmosphere-overlay-v3.png')) throw new Error('wrong wisteria source');
-          if (info.opacity !== '1') throw new Error('wisteria opacity is not 1');
-          if (!info.naturalWidth || !info.naturalHeight) throw new Error('wisteria image did not load');
-
-          const lobby = await page.$('.dv2-lobby');
-          await lobby.screenshot({ path: 'detour-wisteria-v3-runtime.png', captureBeyondViewport: true });
+          await page.setViewport({width:1280,height:1600,deviceScaleFactor:1});
+          page.on('pageerror',e=>console.error('PAGEERROR',e.message));
+          page.on('response',r=>{if(r.status()>=400)console.error('HTTPERR',r.status(),r.url())});
+          const res=await page.goto('http://127.0.0.1:4173/prototype/detour-v2-three-screen.html',{waitUntil:'domcontentloaded',timeout:12000});
+          console.log('BASE_HTTP',res?.status());
+          await page.waitForSelector('#detourV2',{timeout:8000});
+          const styles=['detour-responsive-composition.css','detour-art-slots.css','detour-listen-day.css','detour-read-day.css','detour-gifts-day.css','detour-feeding-day.css','detour-games-day.css','detour-dates-day.css','detour-fox-day.css','detour-lobby-background-test.css','detour-wisteria-overlay-review.css'];
+          for(const f of styles){console.log('STYLE_START',f);await withTimeout(page.addStyleTag({path:'assets/v2/'+f}),'style '+f);console.log('STYLE_DONE',f)}
+          const scripts=['detour-illustration-upgrade.js','detour-listen-day.js','detour-read-day.js','detour-gifts-day.js','detour-feeding-day.js','detour-games-day.js','detour-dates-day.js','detour-fox-day.js','detour-wisteria-overlay-review.js'];
+          for(const f of scripts){console.log('SCRIPT_START',f);await withTimeout(page.addScriptTag({path:'assets/v2/'+f}),'script '+f);console.log('SCRIPT_DONE',f)}
+          await page.evaluate(()=>{const lobby=document.querySelector('.dv2-lobby');for(const s of document.querySelectorAll('.dv2-scene'))s.hidden=s!==lobby;});
+          await page.waitForSelector('.dv2-lobby-wisteria-overlay',{timeout:8000});
+          await page.waitForFunction(()=>{const i=document.querySelector('.dv2-lobby-wisteria-overlay');return i&&i.complete&&i.naturalWidth>0},{timeout:8000});
+          const info=await page.evaluate(()=>{const i=document.querySelector('.dv2-lobby-wisteria-overlay');const l=document.querySelector('.dv2-lobby');return{src:i?.getAttribute('src'),naturalWidth:i?.naturalWidth,naturalHeight:i?.naturalHeight,opacity:i?getComputedStyle(i).opacity:null,lobbyHidden:l?.hidden??null,entries:document.querySelectorAll('.dv2-entry').length,fox:document.querySelectorAll('.dv2-fox').length}});
+          console.log('RUNTIME_INFO',JSON.stringify(info));
+          if(!info.src?.includes('detour-wisteria-full-atmosphere-overlay-v3.png'))throw new Error('wrong wisteria source');
+          if(info.opacity!=='1')throw new Error('opacity not 1');
+          if(!info.naturalWidth||!info.naturalHeight)throw new Error('wisteria not loaded');
+          await new Promise(r=>setTimeout(r,700));
+          const lobby=await page.$('.dv2-lobby');
+          console.log('SHOT_START');
+          await withTimeout(lobby.screenshot({path:'detour-wisteria-v3-runtime.png'}),'screenshot',12000);
+          console.log('SHOT_DONE');
           await browser.close();
           EOF
-          CHROME_PATH="$(which google-chrome)" node render-runtime.mjs
+          CHROME_PATH="$(which google-chrome)" timeout 70s node render-runtime.mjs
           test -s detour-wisteria-v3-runtime.png
-
       - name: Upload render
         uses: actions/upload-artifact@v4
         with:
