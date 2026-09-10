@@ -23,9 +23,11 @@ jobs:
           p=Path('prototype/detour-v2-three-screen.html')
           html=p.read_text(encoding='utf-8')
           head='''<link rel="stylesheet" href="../assets/v2/detour-responsive-composition.css"><link rel="stylesheet" href="../assets/v2/detour-art-slots.css"><link rel="stylesheet" href="../assets/v2/detour-listen-day.css"><link rel="stylesheet" href="../assets/v2/detour-read-day.css"><link rel="stylesheet" href="../assets/v2/detour-gifts-day.css"><link rel="stylesheet" href="../assets/v2/detour-feeding-day.css"><link rel="stylesheet" href="../assets/v2/detour-games-day.css"><link rel="stylesheet" href="../assets/v2/detour-dates-day.css"><link rel="stylesheet" href="../assets/v2/detour-fox-day.css"><link rel="stylesheet" href="../assets/v2/detour-lobby-background-test.css"><link rel="stylesheet" href="../assets/v2/detour-wisteria-overlay-review.css">'''
-          body='''<script src="../assets/v2/detour-illustration-upgrade.js"></script><script src="../assets/v2/detour-listen-day.js"></script><script src="../assets/v2/detour-read-day.js"></script><script src="../assets/v2/detour-gifts-day.js"></script><script src="../assets/v2/detour-feeding-day.js"></script><script src="../assets/v2/detour-games-day.js"></script><script src="../assets/v2/detour-dates-day.js"></script><script src="../assets/v2/detour-fox-day.js"></script><script src="../assets/v2/detour-wisteria-overlay-review.js"></script><script>requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelector('#dv2Skip')?.click()));</script>'''
+          body='''<script src="../assets/v2/detour-illustration-upgrade.js"></script><script src="../assets/v2/detour-listen-day.js"></script><script src="../assets/v2/detour-read-day.js"></script><script src="../assets/v2/detour-gifts-day.js"></script><script src="../assets/v2/detour-feeding-day.js"></script><script src="../assets/v2/detour-games-day.js"></script><script src="../assets/v2/detour-dates-day.js"></script><script src="../assets/v2/detour-fox-day.js"></script><script src="../assets/v2/detour-wisteria-overlay-review.js"></script>'''
           html=html.replace('</head>',head+'</head>').replace('</body>',body+'</body>')
           Path('prototype/runtime-review.html').write_text(html,encoding='utf-8')
+          print('ASSEMBLED_HAS_DETOUR', '#detourV2' in html, 'id="detourV2"' in html)
+          print('ASSEMBLED_BYTES', len(html.encode('utf-8')))
           PY
 
       - name: Setup Chrome
@@ -39,41 +41,46 @@ jobs:
           python3 -m http.server 4173 > /tmp/detour-http.log 2>&1 &
           sleep 2
 
-      - name: Render assembled review page in Chromium
+      - name: Capture Chromium diagnostics
         run: |
-          cat > render-runtime.mjs <<'EOF'
+          cat > diagnose-runtime.mjs <<'EOF'
           import puppeteer from 'puppeteer-core';
+          import fs from 'node:fs';
           const browser=await puppeteer.launch({executablePath:process.env.CHROME_PATH,headless:true,args:['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage']});
           const page=await browser.newPage();
           await page.setViewport({width:1280,height:1600,deviceScaleFactor:1});
-          await page.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);
-          page.on('pageerror',e=>console.error('PAGEERROR',e.message));
+          page.on('console',m=>console.log('BROWSER_CONSOLE',m.type(),m.text()));
+          page.on('pageerror',e=>console.error('PAGEERROR',e.stack||e.message));
+          page.on('requestfailed',r=>console.error('REQFAIL',r.url(),r.failure()?.errorText));
           page.on('response',r=>{if(r.status()>=400)console.error('HTTPERR',r.status(),r.url())});
-          const res=await page.goto('http://127.0.0.1:4173/prototype/runtime-review.html',{waitUntil:'domcontentloaded',timeout:15000});
-          console.log('HTTP',res?.status());
-          await page.waitForSelector('#detourV2',{timeout:15000});
-          await page.waitForSelector('.dv2-lobby',{timeout:15000});
-          await page.evaluate(()=>{const lobby=document.querySelector('.dv2-lobby');for(const s of document.querySelectorAll('.dv2-scene'))s.hidden=s!==lobby;});
-          await page.waitForSelector('.dv2-lobby-wisteria-overlay',{visible:true,timeout:15000});
-          await page.waitForFunction(()=>{const i=document.querySelector('.dv2-lobby-wisteria-overlay');return i&&i.complete&&i.naturalWidth>0},{timeout:15000});
-          await new Promise(r=>setTimeout(r,2500));
-          const info=await page.evaluate(()=>{const i=document.querySelector('.dv2-lobby-wisteria-overlay');const l=document.querySelector('.dv2-lobby');return{src:i?.getAttribute('src'),naturalWidth:i?.naturalWidth,naturalHeight:i?.naturalHeight,opacity:i?getComputedStyle(i).opacity:null,lobbyHidden:l?.hidden??null,listen:!!document.querySelector('.listen'),read:!!document.querySelector('.read'),gifts:!!document.querySelector('.gifts'),feed:!!document.querySelector('.feed'),games:!!document.querySelector('.games'),dates:!!document.querySelector('.dates'),fox:!!document.querySelector('.dv2-fox')};});
-          console.log('RUNTIME_INFO',JSON.stringify(info));
-          if(!info.src?.includes('detour-wisteria-full-atmosphere-overlay-v3.png'))throw new Error('wrong wisteria source');
-          if(info.opacity!=='1')throw new Error('wisteria opacity not 1');
-          if(!info.naturalWidth||!info.naturalHeight)throw new Error('wisteria image did not load');
-          if(!(info.listen&&info.read&&info.gifts&&info.feed&&info.games&&info.dates&&info.fox))throw new Error('frozen lobby elements missing');
-          const lobby=await page.$('.dv2-lobby');
-          await lobby.screenshot({path:'detour-wisteria-v3-runtime.png',captureBeyondViewport:true});
-          console.log('SHOT_DONE');
+          const url='http://127.0.0.1:4173/prototype/runtime-review.html';
+          const res=await page.goto(url,{waitUntil:'domcontentloaded',timeout:20000});
+          console.log('HTTP',res?.status(),'URL',page.url());
+          await new Promise(r=>setTimeout(r,3500));
+          const html=await page.content();
+          fs.writeFileSync('chromium-page.html',html);
+          const diag=await page.evaluate(()=>({
+            title:document.title,
+            readyState:document.readyState,
+            bodyLength:document.body?.innerHTML.length ?? -1,
+            bodyStart:(document.body?.innerHTML||'').slice(0,1200),
+            hasDetour:!!document.querySelector('#detourV2'),
+            ids:[...document.querySelectorAll('[id]')].slice(0,30).map(n=>n.id),
+            scripts:[...document.scripts].map(s=>s.src||'[inline]').slice(-20),
+            links:[...document.querySelectorAll('link[rel="stylesheet"]')].map(l=>l.href).slice(-20)
+          }));
+          console.log('DIAG',JSON.stringify(diag));
+          await page.screenshot({path:'chromium-page.png',fullPage:true});
           await browser.close();
           EOF
-          CHROME_PATH="$(which google-chrome)" timeout 70s node render-runtime.mjs
-          test -s detour-wisteria-v3-runtime.png
+          CHROME_PATH="$(which google-chrome)" timeout 60s node diagnose-runtime.mjs
 
-      - name: Upload render
+      - name: Upload diagnostics
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: detour-wisteria-v3-runtime-render
-          path: detour-wisteria-v3-runtime.png
+          name: detour-wisteria-v3-runtime-diagnostics
+          path: |
+            chromium-page.html
+            chromium-page.png
           if-no-files-found: error
