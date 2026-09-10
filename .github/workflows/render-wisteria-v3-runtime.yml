@@ -28,7 +28,7 @@ jobs:
 
       - name: Render actual review page
         run: |
-          cat > /tmp/render.mjs <<'EOF'
+          cat > render-runtime.mjs <<'EOF'
           import puppeteer from 'puppeteer-core';
           const browser = await puppeteer.launch({
             executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome',
@@ -70,7 +70,7 @@ jobs:
           await page.screenshot({ path: 'detour-wisteria-v3-runtime.png', fullPage: true });
           await browser.close();
           EOF
-          CHROME_PATH="$(which google-chrome)" node /tmp/render.mjs
+          CHROME_PATH="$(which google-chrome)" node render-runtime.mjs
           test -s detour-wisteria-v3-runtime.png
 
       - name: Upload render
