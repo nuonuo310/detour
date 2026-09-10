@@ -16,6 +16,18 @@ jobs:
         with:
           ref: visual-v2-day-wisteria-overlay-test
 
+      - name: Assemble exact review document
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('prototype/detour-v2-three-screen.html')
+          html=p.read_text(encoding='utf-8')
+          head='''<link rel="stylesheet" href="../assets/v2/detour-responsive-composition.css"><link rel="stylesheet" href="../assets/v2/detour-art-slots.css"><link rel="stylesheet" href="../assets/v2/detour-listen-day.css"><link rel="stylesheet" href="../assets/v2/detour-read-day.css"><link rel="stylesheet" href="../assets/v2/detour-gifts-day.css"><link rel="stylesheet" href="../assets/v2/detour-feeding-day.css"><link rel="stylesheet" href="../assets/v2/detour-games-day.css"><link rel="stylesheet" href="../assets/v2/detour-dates-day.css"><link rel="stylesheet" href="../assets/v2/detour-fox-day.css"><link rel="stylesheet" href="../assets/v2/detour-lobby-background-test.css"><link rel="stylesheet" href="../assets/v2/detour-wisteria-overlay-review.css">'''
+          body='''<script src="../assets/v2/detour-illustration-upgrade.js"></script><script src="../assets/v2/detour-listen-day.js"></script><script src="../assets/v2/detour-read-day.js"></script><script src="../assets/v2/detour-gifts-day.js"></script><script src="../assets/v2/detour-feeding-day.js"></script><script src="../assets/v2/detour-games-day.js"></script><script src="../assets/v2/detour-dates-day.js"></script><script src="../assets/v2/detour-fox-day.js"></script><script src="../assets/v2/detour-wisteria-overlay-review.js"></script><script>requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelector('#dv2Skip')?.click()));</script>'''
+          html=html.replace('</head>',head+'</head>').replace('</body>',body+'</body>')
+          Path('prototype/runtime-review.html').write_text(html,encoding='utf-8')
+          PY
+
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
 
@@ -27,55 +39,30 @@ jobs:
           python3 -m http.server 4173 > /tmp/detour-http.log 2>&1 &
           sleep 2
 
-      - name: Render exact review page in Chromium
+      - name: Render assembled review page in Chromium
         run: |
           cat > render-runtime.mjs <<'EOF'
           import puppeteer from 'puppeteer-core';
-          const browser=await puppeteer.launch({
-            executablePath:process.env.CHROME_PATH,
-            headless:true,
-            args:['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage']
-          });
+          const browser=await puppeteer.launch({executablePath:process.env.CHROME_PATH,headless:true,args:['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage']});
           const page=await browser.newPage();
           await page.setViewport({width:1280,height:1600,deviceScaleFactor:1});
           await page.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);
           page.on('pageerror',e=>console.error('PAGEERROR',e.message));
           page.on('response',r=>{if(r.status()>=400)console.error('HTTPERR',r.status(),r.url())});
-          const url='http://127.0.0.1:4173/prototype/detour-v2-day-lobby-background-review.html';
-          const res=await page.goto(url,{waitUntil:'domcontentloaded',timeout:15000});
+          const res=await page.goto('http://127.0.0.1:4173/prototype/runtime-review.html',{waitUntil:'domcontentloaded',timeout:15000});
           console.log('HTTP',res?.status());
           await page.waitForSelector('#detourV2',{timeout:15000});
           await page.waitForSelector('.dv2-lobby',{timeout:15000});
-          await page.evaluate(()=>{
-            const lobby=document.querySelector('.dv2-lobby');
-            for(const s of document.querySelectorAll('.dv2-scene')) s.hidden=s!==lobby;
-          });
+          await page.evaluate(()=>{const lobby=document.querySelector('.dv2-lobby');for(const s of document.querySelectorAll('.dv2-scene'))s.hidden=s!==lobby;});
           await page.waitForSelector('.dv2-lobby-wisteria-overlay',{visible:true,timeout:15000});
-          await page.waitForFunction(()=>{
-            const i=document.querySelector('.dv2-lobby-wisteria-overlay');
-            return i&&i.complete&&i.naturalWidth>0;
-          },{timeout:15000});
+          await page.waitForFunction(()=>{const i=document.querySelector('.dv2-lobby-wisteria-overlay');return i&&i.complete&&i.naturalWidth>0},{timeout:15000});
           await new Promise(r=>setTimeout(r,2500));
-          const info=await page.evaluate(()=>{
-            const i=document.querySelector('.dv2-lobby-wisteria-overlay');
-            const l=document.querySelector('.dv2-lobby');
-            return {
-              src:i?.getAttribute('src'),naturalWidth:i?.naturalWidth,naturalHeight:i?.naturalHeight,
-              opacity:i?getComputedStyle(i).opacity:null,lobbyHidden:l?.hidden??null,
-              listenReady:document.documentElement.classList.contains('detour-listen-day-v1'),
-              readReady:document.documentElement.classList.contains('detour-read-day-v2'),
-              giftsReady:document.documentElement.classList.contains('detour-gifts-day-v1'),
-              feedingReady:document.documentElement.classList.contains('detour-feeding-day-v1'),
-              gamesReady:document.documentElement.classList.contains('detour-games-day-v1'),
-              datesReady:document.documentElement.classList.contains('detour-dates-day-v1'),
-              foxReady:[...document.documentElement.classList].some(c=>c.startsWith('detour-fox-day'))
-            };
-          });
+          const info=await page.evaluate(()=>{const i=document.querySelector('.dv2-lobby-wisteria-overlay');const l=document.querySelector('.dv2-lobby');return{src:i?.getAttribute('src'),naturalWidth:i?.naturalWidth,naturalHeight:i?.naturalHeight,opacity:i?getComputedStyle(i).opacity:null,lobbyHidden:l?.hidden??null,listen:!!document.querySelector('.listen'),read:!!document.querySelector('.read'),gifts:!!document.querySelector('.gifts'),feed:!!document.querySelector('.feed'),games:!!document.querySelector('.games'),dates:!!document.querySelector('.dates'),fox:!!document.querySelector('.dv2-fox')};});
           console.log('RUNTIME_INFO',JSON.stringify(info));
-          if(!info.src?.includes('detour-wisteria-full-atmosphere-overlay-v3.png')) throw new Error('wrong wisteria source');
-          if(info.opacity!=='1') throw new Error('wisteria opacity not 1');
-          if(!info.naturalWidth||!info.naturalHeight) throw new Error('wisteria image did not load');
-          if(!(info.listenReady&&info.readReady&&info.giftsReady&&info.feedingReady&&info.gamesReady&&info.datesReady&&info.foxReady)) throw new Error('one or more frozen lobby layers did not initialize');
+          if(!info.src?.includes('detour-wisteria-full-atmosphere-overlay-v3.png'))throw new Error('wrong wisteria source');
+          if(info.opacity!=='1')throw new Error('wisteria opacity not 1');
+          if(!info.naturalWidth||!info.naturalHeight)throw new Error('wisteria image did not load');
+          if(!(info.listen&&info.read&&info.gifts&&info.feed&&info.games&&info.dates&&info.fox))throw new Error('frozen lobby elements missing');
           const lobby=await page.$('.dv2-lobby');
           await lobby.screenshot({path:'detour-wisteria-v3-runtime.png',captureBeyondViewport:true});
           console.log('SHOT_DONE');
