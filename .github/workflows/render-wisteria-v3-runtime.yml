@@ -1,0 +1,43 @@
+name: Render wisteria v3 runtime
+
+on:
+  push:
+    branches:
+      - visual-v2-day-wisteria-v3-runtime
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Serve review page
+        run: |
+          python3 -m http.server 4173 > /tmp/detour-http.log 2>&1 &
+          echo $! > /tmp/detour-http.pid
+          sleep 2
+
+      - name: Render actual review page
+        run: |
+          google-chrome \
+            --headless \
+            --disable-gpu \
+            --no-sandbox \
+            --hide-scrollbars \
+            --window-size=1280,2400 \
+            --screenshot=detour-wisteria-v3-runtime.png \
+            http://127.0.0.1:4173/prototype/detour-v2-day-lobby-background-review.html
+          test -s detour-wisteria-v3-runtime.png
+
+      - name: Upload render
+        uses: actions/upload-artifact@v4
+        with:
+          name: detour-wisteria-v3-runtime-render
+          path: detour-wisteria-v3-runtime.png
+          if-no-files-found: error
