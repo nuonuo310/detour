@@ -9,53 +9,115 @@ on:
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 8
     steps:
-      - name: Checkout
+      - name: Checkout wisteria runtime
         uses: actions/checkout@v4
+
+      - name: Bring frozen fox assets into runtime workspace
+        run: |
+          git fetch --depth=1 origin visual-v2-day-fox-v2
+          git checkout FETCH_HEAD -- assets/v2/art/fox-day
+
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
+
       - name: Install renderer
         run: npm install --no-save puppeteer-core@24
+
       - name: Serve repo
         run: |
           python3 -m http.server 4173 > /tmp/detour-http.log 2>&1 &
           sleep 2
-      - name: Render actual lobby from repo code
+
+      - name: Render exact lobby layers in Chromium
         run: |
           cat > render-runtime.mjs <<'EOF'
           import puppeteer from 'puppeteer-core';
-          const browser=await puppeteer.launch({executablePath:process.env.CHROME_PATH,headless:true,args:['--no-sandbox','--disable-setuid-sandbox']});
+          const browser=await puppeteer.launch({
+            executablePath:process.env.CHROME_PATH,
+            headless:true,
+            args:['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage']
+          });
           const page=await browser.newPage();
           await page.setViewport({width:1280,height:1600,deviceScaleFactor:1});
+          await page.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);
           page.on('pageerror',e=>console.error('PAGEERROR',e.message));
           page.on('response',r=>{if(r.status()>=400)console.error('HTTPERR',r.status(),r.url())});
           const origin='http://127.0.0.1:4173/';
-          const res=await page.goto(origin+'prototype/detour-v2-three-screen.html',{waitUntil:'domcontentloaded',timeout:12000});
+          const res=await page.goto(origin+'prototype/detour-v2-three-screen.html',{waitUntil:'domcontentloaded',timeout:15000});
           console.log('BASE_HTTP',res?.status());
-          await page.waitForSelector('#detourV2',{timeout:8000});
+          await page.waitForSelector('#detourV2',{timeout:10000});
+
           const styles=['detour-responsive-composition.css','detour-art-slots.css','detour-listen-day.css','detour-read-day.css','detour-gifts-day.css','detour-feeding-day.css','detour-games-day.css','detour-dates-day.css','detour-fox-day.css','detour-lobby-background-test.css','detour-wisteria-overlay-review.css'];
-          await page.evaluate(({origin,styles})=>{
-            for(const f of styles){const el=document.createElement('link');el.rel='stylesheet';el.href=origin+'assets/v2/'+f;document.head.append(el)}
-          },{origin,styles});
-          await page.evaluate(()=>{const lobby=document.querySelector('.dv2-lobby');for(const s of document.querySelectorAll('.dv2-scene'))s.hidden=s!==lobby;});
-          await page.addScriptTag({url:origin+'assets/v2/detour-wisteria-overlay-review.js'});
-          await page.waitForSelector('.dv2-lobby-wisteria-overlay',{visible:true,timeout:10000});
-          await page.waitForFunction(()=>{const i=document.querySelector('.dv2-lobby-wisteria-overlay');return i&&i.complete&&i.naturalWidth>0},{timeout:10000});
-          await new Promise(r=>setTimeout(r,800));
-          const info=await page.evaluate(()=>{const i=document.querySelector('.dv2-lobby-wisteria-overlay');const l=document.querySelector('.dv2-lobby');return{src:i?.getAttribute('src'),naturalWidth:i?.naturalWidth,naturalHeight:i?.naturalHeight,opacity:i?getComputedStyle(i).opacity:null,lobbyHidden:l?.hidden??null,listen:document.querySelectorAll('.listen').length,read:document.querySelectorAll('.read').length,gifts:document.querySelectorAll('.gifts').length,feed:document.querySelectorAll('.feed').length,games:document.querySelectorAll('.games').length,dates:document.querySelectorAll('.dates').length,fox:document.querySelectorAll('.dv2-fox').length}});
+          for(const f of styles){
+            await page.evaluate(({src,id})=>new Promise((resolve,reject)=>{
+              const el=document.createElement('link');
+              el.rel='stylesheet';el.href=src;el.dataset.runtime=id;
+              el.onload=()=>resolve();el.onerror=()=>reject(new Error('style '+id+' failed'));
+              document.head.append(el);
+            }),{src:origin+'assets/v2/'+f,id:f});
+            console.log('STYLE_OK',f);
+          }
+
+          const scripts=['detour-illustration-upgrade.js','detour-listen-day.js','detour-read-day.js','detour-gifts-day.js','detour-feeding-day.js','detour-games-day.js','detour-dates-day.js','detour-fox-day.js','detour-wisteria-overlay-review.js'];
+          for(const f of scripts){
+            await page.evaluate(({src,id})=>new Promise((resolve,reject)=>{
+              const el=document.createElement('script');
+              el.src=src;el.dataset.runtime=id;
+              el.onload=()=>resolve();el.onerror=()=>reject(new Error('script '+id+' failed'));
+              document.body.append(el);
+            }),{src:origin+'assets/v2/'+f,id:f});
+            console.log('SCRIPT_OK',f);
+          }
+
+          await page.evaluate(()=>{
+            const lobby=document.querySelector('.dv2-lobby');
+            for(const s of document.querySelectorAll('.dv2-scene')) s.hidden=s!==lobby;
+          });
+
+          await page.waitForSelector('.dv2-lobby-wisteria-overlay',{visible:true,timeout:12000});
+          await page.waitForFunction(()=>{
+            const i=document.querySelector('.dv2-lobby-wisteria-overlay');
+            return i&&i.complete&&i.naturalWidth>0;
+          },{timeout:12000});
+          await page.waitForFunction(()=>{
+            const selectors=['.listen .art','.read .art','.gifts .art','.feed .art','.games .art','.dates .art','.dv2-fox'];
+            return selectors.every(s=>document.querySelector(s));
+          },{timeout:10000});
+          await new Promise(r=>setTimeout(r,1800));
+
+          const info=await page.evaluate(()=>{
+            const i=document.querySelector('.dv2-lobby-wisteria-overlay');
+            const l=document.querySelector('.dv2-lobby');
+            return {
+              src:i?.getAttribute('src'),
+              naturalWidth:i?.naturalWidth,
+              naturalHeight:i?.naturalHeight,
+              opacity:i?getComputedStyle(i).opacity:null,
+              lobbyHidden:l?.hidden??null,
+              listenReady:document.documentElement.classList.contains('detour-listen-day-v1'),
+              readReady:document.documentElement.classList.contains('detour-read-day-v2'),
+              giftsReady:document.documentElement.classList.contains('detour-gifts-day-v1'),
+              feedingReady:document.documentElement.classList.contains('detour-feeding-day-v1'),
+              gamesReady:document.documentElement.classList.contains('detour-games-day-v1'),
+              datesReady:document.documentElement.classList.contains('detour-dates-day-v1'),
+              foxReady:[...document.documentElement.classList].some(c=>c.startsWith('detour-fox-day'))
+            };
+          });
           console.log('RUNTIME_INFO',JSON.stringify(info));
-          if(!info.src?.includes('detour-wisteria-full-atmosphere-overlay-v3.png'))throw new Error('wrong wisteria source');
-          if(info.opacity!=='1')throw new Error('opacity not 1');
-          if(!info.naturalWidth||!info.naturalHeight)throw new Error('wisteria not loaded');
-          if(!(info.listen&&info.read&&info.gifts&&info.feed&&info.games&&info.dates&&info.fox))throw new Error('frozen lobby elements missing');
+          if(!info.src?.includes('detour-wisteria-full-atmosphere-overlay-v3.png')) throw new Error('wrong wisteria source');
+          if(info.opacity!=='1') throw new Error('wisteria opacity not 1');
+          if(!info.naturalWidth||!info.naturalHeight) throw new Error('wisteria image did not load');
+
           const lobby=await page.$('.dv2-lobby');
-          await lobby.screenshot({path:'detour-wisteria-v3-runtime.png'});
+          await lobby.screenshot({path:'detour-wisteria-v3-runtime.png',captureBeyondViewport:true});
           console.log('SHOT_DONE');
           await browser.close();
           EOF
-          CHROME_PATH="$(which google-chrome)" timeout 45s node render-runtime.mjs
+          CHROME_PATH="$(which google-chrome)" timeout 100s node render-runtime.mjs
           test -s detour-wisteria-v3-runtime.png
+
       - name: Upload render
         uses: actions/upload-artifact@v4
         with:
