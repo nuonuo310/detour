@@ -11,8 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Checkout wisteria runtime
+      - name: Checkout exact overlay branch
         uses: actions/checkout@v4
+        with:
+          ref: visual-v2-day-wisteria-overlay-test
 
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
@@ -25,7 +27,7 @@ jobs:
           python3 -m http.server 4173 > /tmp/detour-http.log 2>&1 &
           sleep 2
 
-      - name: Render exact lobby layers in Chromium
+      - name: Render exact review page in Chromium
         run: |
           cat > render-runtime.mjs <<'EOF'
           import puppeteer from 'puppeteer-core';
@@ -39,45 +41,21 @@ jobs:
           await page.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);
           page.on('pageerror',e=>console.error('PAGEERROR',e.message));
           page.on('response',r=>{if(r.status()>=400)console.error('HTTPERR',r.status(),r.url())});
-          const origin='http://127.0.0.1:4173/';
-          const res=await page.goto(origin+'prototype/detour-v2-three-screen.html',{waitUntil:'domcontentloaded',timeout:15000});
-          console.log('BASE_HTTP',res?.status());
-          await page.waitForSelector('#detourV2',{timeout:10000});
-
-          const styles=['detour-responsive-composition.css','detour-art-slots.css','detour-listen-day.css','detour-read-day.css','detour-gifts-day.css','detour-feeding-day.css','detour-games-day.css','detour-dates-day.css','detour-fox-day.css','detour-lobby-background-test.css','detour-wisteria-overlay-review.css'];
-          for(const f of styles){
-            await page.evaluate(({src,id})=>new Promise((resolve,reject)=>{
-              const el=document.createElement('link');
-              el.rel='stylesheet';el.href=src;el.dataset.runtime=id;
-              el.onload=()=>resolve();el.onerror=()=>reject(new Error('style '+id+' failed'));
-              document.head.append(el);
-            }),{src:origin+'assets/v2/'+f,id:f});
-            console.log('STYLE_OK',f);
-          }
-
-          const scripts=['detour-illustration-upgrade.js','detour-listen-day.js','detour-read-day.js','detour-gifts-day.js','detour-feeding-day.js','detour-games-day.js','detour-dates-day.js','detour-fox-day.js','detour-wisteria-overlay-review.js'];
-          for(const f of scripts){
-            await page.evaluate(({src,id})=>new Promise((resolve,reject)=>{
-              const el=document.createElement('script');
-              el.src=src;el.dataset.runtime=id;
-              el.onload=()=>resolve();el.onerror=()=>reject(new Error('script '+id+' failed'));
-              document.body.append(el);
-            }),{src:origin+'assets/v2/'+f,id:f});
-            console.log('SCRIPT_OK',f);
-          }
-
+          const url='http://127.0.0.1:4173/prototype/detour-v2-day-lobby-background-review.html';
+          const res=await page.goto(url,{waitUntil:'domcontentloaded',timeout:15000});
+          console.log('HTTP',res?.status());
+          await page.waitForSelector('#detourV2',{timeout:15000});
+          await page.waitForSelector('.dv2-lobby',{timeout:15000});
           await page.evaluate(()=>{
             const lobby=document.querySelector('.dv2-lobby');
             for(const s of document.querySelectorAll('.dv2-scene')) s.hidden=s!==lobby;
           });
-
-          await page.waitForSelector('.dv2-lobby-wisteria-overlay',{visible:true,timeout:12000});
+          await page.waitForSelector('.dv2-lobby-wisteria-overlay',{visible:true,timeout:15000});
           await page.waitForFunction(()=>{
             const i=document.querySelector('.dv2-lobby-wisteria-overlay');
             return i&&i.complete&&i.naturalWidth>0;
-          },{timeout:12000});
-          await new Promise(r=>setTimeout(r,1800));
-
+          },{timeout:15000});
+          await new Promise(r=>setTimeout(r,2500));
           const info=await page.evaluate(()=>{
             const i=document.querySelector('.dv2-lobby-wisteria-overlay');
             const l=document.querySelector('.dv2-lobby');
@@ -97,13 +75,13 @@ jobs:
           if(!info.src?.includes('detour-wisteria-full-atmosphere-overlay-v3.png')) throw new Error('wrong wisteria source');
           if(info.opacity!=='1') throw new Error('wisteria opacity not 1');
           if(!info.naturalWidth||!info.naturalHeight) throw new Error('wisteria image did not load');
-
+          if(!(info.listenReady&&info.readReady&&info.giftsReady&&info.feedingReady&&info.gamesReady&&info.datesReady&&info.foxReady)) throw new Error('one or more frozen lobby layers did not initialize');
           const lobby=await page.$('.dv2-lobby');
           await lobby.screenshot({path:'detour-wisteria-v3-runtime.png',captureBeyondViewport:true});
           console.log('SHOT_DONE');
           await browser.close();
           EOF
-          CHROME_PATH="$(which google-chrome)" timeout 100s node render-runtime.mjs
+          CHROME_PATH="$(which google-chrome)" timeout 70s node render-runtime.mjs
           test -s detour-wisteria-v3-runtime.png
 
       - name: Upload render
